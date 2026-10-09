@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: BSD-3-Clause
+/dts-v1/;
+#include "sm8650-lenovo-tb520fu.dtsi"

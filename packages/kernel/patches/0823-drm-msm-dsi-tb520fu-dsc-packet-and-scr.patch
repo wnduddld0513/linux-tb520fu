@@ -1,0 +1,88 @@
+From: TB520FU fork maintainers
+Subject: [PATCH] drm/msm/dsi: allow board-selected DSC packet grouping and SCR1
+
+diff --git a/drivers/gpu/drm/msm/dsi/dsi_host.c b/drivers/gpu/drm/msm/dsi/dsi_host.c
+--- a/drivers/gpu/drm/msm/dsi/dsi_host.c
++++ b/drivers/gpu/drm/msm/dsi/dsi_host.c
+@@ -168,6 +168,8 @@
+ 
+ 	struct drm_display_mode *mode;
+ 	struct drm_dsc_config *dsc;
++	u32 dsc_slices_per_packet;
++	u32 dsc_scr_version;
+ 
+ 	/* connected device info */
+ 	unsigned int channel;
+@@ -959,17 +961,12 @@
+ 	slice_per_intf = dsc->slice_count;
+ 
+ 	total_bytes_per_intf = dsc->slice_chunk_size * slice_per_intf;
+-	bytes_per_pkt = dsc->slice_chunk_size; /* * slice_per_pkt; */
++	bytes_per_pkt = dsc->slice_chunk_size * msm_host->dsc_slices_per_packet;
+ 
+ 	eol_byte_num = total_bytes_per_intf % 3;
+ 
+-	/*
+-	 * Typically, pkt_per_line = slice_per_intf * slice_per_pkt.
+-	 *
+-	 * Since the current driver only supports slice_per_pkt = 1,
+-	 * pkt_per_line will be equal to slice per intf for now.
+-	 */
+-	pkt_per_line = slice_per_intf;
++	/* Two decoder slices can share one compressed stream packet. */
++	pkt_per_line = slice_per_intf / msm_host->dsc_slices_per_packet;
+ 
+ 	if (is_cmd_mode) /* packet data type */
+ 		reg = DSI_COMMAND_COMPRESSION_MODE_CTRL_STREAM0_DATATYPE(MIPI_DSI_DCS_LONG_WRITE);
+@@ -1125,14 +1122,7 @@
+ 		if (!msm_host->dsc)
+ 			wc = hdisplay * mipi_dsi_pixel_format_to_bpp(msm_host->format) / 8 + 1;
+ 		else
+-			/*
+-			 * When DSC is enabled, WC = slice_chunk_size * slice_per_pkt + 1.
+-			 * Currently, the driver only supports default value of slice_per_pkt = 1
+-			 *
+-			 * TODO: Expand mipi_dsi_device struct to hold slice_per_pkt info
+-			 *       and adjust DSC math to account for slice_per_pkt.
+-			 */
+-			wc = msm_host->dsc->slice_chunk_size + 1;
++			wc = msm_host->dsc->slice_chunk_size * msm_host->dsc_slices_per_packet + 1;
+ 
+ 		dsi_write(msm_host, REG_DSI_CMD_MDP_STREAM0_CTRL,
+ 			DSI_CMD_MDP_STREAM0_CTRL_WORD_COUNT(wc) |
+@@ -1741,8 +1731,22 @@
+ 	msm_host->lanes = dsi->lanes;
+ 	msm_host->format = dsi->format;
+ 	msm_host->mode_flags = dsi->mode_flags;
+-	if (dsi->dsc)
++	msm_host->dsc_slices_per_packet = 1;
++	msm_host->dsc_scr_version = 0;
++	if (dsi->dsc) {
++		struct device_node *np = msm_host->pdev->dev.of_node;
++
++		of_property_read_u32(np, "qcom,dsc-slices-per-packet", &msm_host->dsc_slices_per_packet);
++		of_property_read_u32(np, "qcom,dsc-scr-version", &msm_host->dsc_scr_version);
++		if ((msm_host->dsc_slices_per_packet != 1 &&
++		     msm_host->dsc_slices_per_packet != 2 &&
++		     msm_host->dsc_slices_per_packet != 4) ||
++		    !dsi->dsc->slice_count ||
++		    dsi->dsc->slice_count % msm_host->dsc_slices_per_packet ||
++		    msm_host->dsc_scr_version > 1)
++			return -EINVAL;
+ 		msm_host->dsc = dsi->dsc;
++	}
+ 
+ 	if (msm_host->format == MIPI_DSI_FMT_RGB101010) {
+ 		if (!msm_dsi_host_version_geq(msm_host, MSM_DSI_VER_MAJOR_6G,
+@@ -1922,8 +1926,9 @@
+ 	drm_dsc_set_const_params(dsc);
+ 	drm_dsc_set_rc_buf_thresh(dsc);
+ 
+-	/* DPU supports only pre-SCR panels */
+-	ret = drm_dsc_setup_rc_params(dsc, DRM_DSC_1_1_PRE_SCR);
++	/* Preserve legacy tables unless the board explicitly requests SCR1. */
++	ret = drm_dsc_setup_rc_params(dsc, msm_host->dsc_scr_version ?
++				     DRM_DSC_1_2_444 : DRM_DSC_1_1_PRE_SCR);
+ 	if (ret) {
+ 		DRM_DEV_ERROR(&msm_host->pdev->dev, "could not find DSC RC parameters\n");
+ 		return ret;

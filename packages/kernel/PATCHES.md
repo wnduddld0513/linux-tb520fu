@@ -790,3 +790,21 @@ no equivalent submission was found, or a permanent URL to the upstream submissio
 - `patches/0505a-arm64-unaligned-atomics-cover-the-load128-store-exclusive.patch`
   source: armada
   upstream: local
+
+## TB520FU display/touch bring-up (uncompiled, hardware unverified)
+
+- `patches/0820-drm-panel-add-tb520fu-nt36532.patch`
+  source: Lenovo TB520FU stock `decomp/dtcmp/running.dts`; Linux v7.2.6 DRM APIs
+  notes: Separate Tianma/BOE stock command tables, dual four-lane D-PHY, native 2944x1840@120, DSC 1.1 SCR1 at 10 bpc/8 bpp, stock reset delays and separate power supplies. Short DCS dummy padding is removed; long payloads and delays are retained.
+- `patches/0821-input-touchscreen-add-nt36532-spi.patch`
+  source: Lenovo TB520FU GPL kernel 6.1.68 `drivers/input/touchscreen/NT36XXX_SPI/{nt36xxx.c,nt36xxx_fw_update.c,nt36xxx_mem_map.h}`
+  notes: Adapted NT36532-only no-flash protocol with bounds-checked firmware partitions, cascade second header/auto-copy, three-byte CRC-bank lengths, 16-bit multitouch, watchdog recovery and DRM panel follower. Does not import Android proc/sysfs, hall callbacks, proprietary pen IOCTLs or the older NT36523 memory map.
+- `patches/0822-backlight-add-tb520fu-dual-ktz8866.patch`
+  source: Lenovo TB520FU stock `running.dts` KTZ8866 init/brightness/bias commands
+  notes: One owner controls primary I2C6 and secondary I2C7 at address 0x11, shares HWEN GPIO82, and disables both LED strings on a transfer error. Bias GPIOs are fixed regulators owned by the panel, not backlight brightness transitions.
+- `patches/0823-drm-msm-dsi-tb520fu-dsc-packet-and-scr.patch`
+  source: TB520FU stock `qcom,mdss-dsc-slice-per-pkt=2` and `qcom,mdss-dsc-scr-version=1`; Linux v7.2.6 `dsi_host.c`
+  notes: Local host DT properties `qcom,dsc-slices-per-packet` and `qcom,dsc-scr-version` opt into grouped packet word counts and SCR1 RC tables. Defaults preserve the inherited single-slice/pre-SCR behavior. SM8650 hardware operation remains unverified.
+- `dts/sm8650-lenovo-tb520fu{,-boe}.dts` and common `.dtsi`
+  source: TB520FU stock running DT for display/touch wiring; inherited SM8650/PMIC/UFS mainline configuration for the shared platform
+  notes: Distinct `lenovo,tb520fu` identity. No TB321FU audio, dual-USB, sensor or haptics nodes are enabled by inheritance. Touch axis rotation is a bring-up assumption requiring four-corner verification. See `tb520fu/source-manifest.json` for exact source hashes and `tb520fu/PORTING.md` for limitations.

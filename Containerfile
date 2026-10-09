@@ -98,6 +98,7 @@ RUN npm run build
 FROM scratch AS ctx
 COPY abl /abl/
 COPY build_files /build_files/
+COPY tb520fu /tb520fu/
 COPY decky /decky/
 COPY system_files /system_files/
 

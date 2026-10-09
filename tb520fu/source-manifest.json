@@ -1,0 +1,25 @@
+{
+  "sources": {
+    "decomp/dtcmp/running.dts": {
+      "size": 1765885,
+      "sha256": "6121110870f58ff991b7890190eb05963dee7a30b537818ab97eef6fffc63dac"
+    },
+    "kernel-6.1.68/drivers/input/touchscreen/NT36XXX_SPI/nt36xxx.c": {
+      "size": 106070,
+      "sha256": "6d284847de0d5cc54a97c4e067c2732649246d5bf33364d3d223c37deed6a8f5"
+    },
+    "kernel-6.1.68/drivers/input/touchscreen/NT36XXX_SPI/nt36xxx.h": {
+      "size": 11516,
+      "sha256": "19bf41105a2477648531e26a6a8e440a99ea8486f7ba0994c33b68ab15688dcf"
+    },
+    "kernel-6.1.68/drivers/input/touchscreen/NT36XXX_SPI/nt36xxx_mem_map.h": {
+      "size": 28349,
+      "sha256": "87641fca3b04966929b97ba1d6f7434ff20458821cf07481392788c27e227c84"
+    },
+    "kernel-6.1.68/drivers/input/touchscreen/NT36XXX_SPI/nt36xxx_fw_update.c": {
+      "size": 24714,
+      "sha256": "93712cad4772ba914e119a39fc0625f3b724d6319061e1d3ee4ca3cd1901e22b"
+    }
+  },
+  "mainline_base": "https://github.com/gregkh/linux/tree/v7.2.6"
+}

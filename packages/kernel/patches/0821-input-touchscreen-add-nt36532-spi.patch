@@ -1,0 +1,566 @@
+From: TB520FU fork maintainers
+Subject: [PATCH] input: add NT36532 SPI touch with TB520FU cascade firmware
+
+diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
+--- a/drivers/input/touchscreen/Kconfig
++++ b/drivers/input/touchscreen/Kconfig
+@@ -730,6 +730,12 @@
+ 
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called novatek-nvt-ts.
++
++config TOUCHSCREEN_NT36532_SPI
++	tristate "Novatek NT36532 no-flash SPI touchscreen"
++	depends on SPI && OF && DRM_PANEL
++	help
++	  TB520FU NT36532 with cascade firmware download and panel follower PM.
+ 
+ source "drivers/input/touchscreen/nt36523/Kconfig"
+ 
+diff --git a/drivers/input/touchscreen/Makefile b/drivers/input/touchscreen/Makefile
+--- a/drivers/input/touchscreen/Makefile
++++ b/drivers/input/touchscreen/Makefile
+@@ -125,3 +125,4 @@
+ obj-$(CONFIG_TOUCHSCREEN_ZINITIX)	+= zinitix.o
+ obj-$(CONFIG_TOUCHSCREEN_HIMAX_HX83112B)	+= himax_hx83112b.o
+ obj-$(CONFIG_TOUCHSCREEN_NT36523_SPI)	+= nt36523/
++obj-$(CONFIG_TOUCHSCREEN_NT36532_SPI) += nt36532-spi.o
+diff --git a/drivers/input/touchscreen/nt36532-spi.c b/drivers/input/touchscreen/nt36532-spi.c
+--- /dev/null
++++ b/drivers/input/touchscreen/nt36532-spi.c
+@@ -0,0 +1,535 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * Novatek NT36532 no-flash SPI touch, Lenovo TB520FU.
++ * Protocol adapted from Lenovo's 6.1.68 GPL NT36XXX_SPI driver:
++ * Copyright (C) 2010 - 2024 Novatek, Inc.
++ * Copyright (C) 2021 XiaoMi, Inc.
++ * The newer 0x1fbxxx memory map, cascade downloader and 16-bit super-resolution
++ * reports must not be replaced by the TB321FU NT36523 protocol.
++ */
++#include <linux/delay.h>
++#include <linux/firmware.h>
++#include <linux/input/mt.h>
++#include <linux/input/touchscreen.h>
++#include <linux/interrupt.h>
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/of.h>
++#include <linux/pm.h>
++#include <linux/property.h>
++#include <linux/sizes.h>
++#include <linux/spi/spi.h>
++#include <linux/unaligned.h>
++#include <drm/drm_panel.h>
++
++#define NVT_EVENT 0x125800
++#define NVT_RESET 0x1fb43e
++#define NVT_TRIM 0x1fb104
++#define NVT_AUTO_COPY 0x1fc925
++#define NVT_BOOT_READY 0x1fb50d
++#define NVT_MAX_PARTS 64
++#define NVT_CHUNK 4096
++#define NVT_CONTACTS 10
++#define NVT_REPORT_SIZE 108
++
++struct nvt_partition { u32 bin, sram, size, crc; };
++struct nt36532_touch {
++	struct spi_device *spi;
++	struct input_dev *input;
++	struct touchscreen_properties prop;
++	struct drm_panel_follower follower;
++	/* ctrl serializes panel/PM; io serializes firmware and IRQ transfers. */
++	struct mutex ctrl, io;
++	const struct firmware *fw;
++	struct nvt_partition parts[NVT_MAX_PARTS];
++	unsigned int part_count;
++	bool cascade, prepared, suspended, running;
++	unsigned int watchdog;
++	u8 *tx, *rx;
++};
++
++/* All SPI helpers require io held; buffers are DMA-safe and never on-stack. */
++static int nvt_page(struct nt36532_touch *t, u32 address)
++{
++	t->tx[0] = 0xff;
++	t->tx[1] = address >> 15;
++	t->tx[2] = address >> 7;
++	return spi_write(t->spi, t->tx, 3);
++}
++static int nvt_write(struct nt36532_touch *t, u32 address, const void *data, size_t len)
++{
++	int ret;
++
++	if (len > NVT_CHUNK)
++		return -EINVAL;
++	ret = nvt_page(t, address);
++	if (ret)
++		return ret;
++	t->tx[0] = (address & 0x7f) | 0x80;
++	memcpy(t->tx + 1, data, len);
++	return spi_write(t->spi, t->tx, len + 1);
++}
++static int nvt_read(struct nt36532_touch *t, u32 address, void *data, size_t len)
++{
++	struct spi_transfer xfer = {
++		.tx_buf = t->tx, .rx_buf = t->rx, .len = len + 2,
++	};
++	int ret;
++
++	if (len > NVT_CHUNK)
++		return -EINVAL;
++	ret = nvt_page(t, address);
++	if (ret)
++		return ret;
++	memset(t->tx, 0, len + 2);
++	t->tx[0] = address & 0x7f;
++	ret = spi_sync_transfer(t->spi, &xfer, 1);
++	if (!ret)
++		memcpy(data, t->rx + 2, len);
++	return ret;
++}
++static int nvt_byte(struct nt36532_touch *t, u32 address, u8 value)
++{
++	return nvt_write(t, address, &value, 1);
++}
++static int nvt_le(struct nt36532_touch *t, u32 address, u32 value, unsigned int bytes)
++{
++	__le32 data = cpu_to_le32(value);
++
++	return nvt_write(t, address, &data, bytes);
++}
++static int nvt_part_valid(struct nt36532_touch *t, struct nvt_partition *p)
++{
++	if (!p->size)
++		return 0; /* Vendor format marks reserved sections with size=0. */
++	if (p->bin >= t->fw->size || p->size >= t->fw->size - p->bin ||
++	    p->sram >= 0x1000000 || p->size >= 0x1000000 - p->sram)
++		return -EINVAL;
++	return 0;
++}
++static int nvt_parse_firmware(struct nt36532_touch *t)
++{
++	const u8 *data = t->fw->data;
++	size_t end, limit, marker;
++	unsigned int n, info_count, overlays, pos;
++	bool header_seen = false;
++
++	if (t->fw->size < 4096 || t->fw->size > SZ_1M)
++		return -EINVAL;
++	/* Locate the last complete NVT/MOD sector and its version complement. */
++	marker = round_down(t->fw->size, 4096);
++	while (marker >= 4096) {
++		if (!memcmp(data + marker - 3, "NVT", 3) ||
++		    !memcmp(data + marker - 3, "MOD", 3))
++			break;
++		marker -= 4096;
++	}
++	if (!marker || (unsigned int)data[marker - 4096] + data[marker - 4095] != 255)
++		return -EINVAL;
++	end = get_unaligned_le32(data);
++	if (end < 0x30 || end > t->fw->size || end % 16)
++		return -EINVAL;
++	t->cascade = data[0x20] & BIT(1);
++	limit = t->cascade ? end / 2 : end;
++	if (limit < 0x30 || limit % 16)
++		return -EINVAL;
++	info_count = (limit - 0x30) / 16 + t->cascade;
++	overlays = (data[0x28] & BIT(4)) ? data[0x28] & 15 : 0;
++	if (2 + info_count + overlays > NVT_MAX_PARTS)
++		return -EINVAL;
++	t->part_count = 2 + info_count + overlays;
++	for (n = 0; n < t->part_count; n++) {
++		struct nvt_partition *p = &t->parts[n];
++
++		if (n < 2) {
++			p->bin = get_unaligned_le32(data + n * 12);
++			p->sram = get_unaligned_le32(data + n * 12 + 4);
++			p->size = get_unaligned_le32(data + n * 12 + 8);
++			p->crc = get_unaligned_le32(data + 0x18 + n * 4);
++		} else {
++			if (n < 2 + info_count)
++				pos = header_seen && t->cascade ? end - 16 : 0x30 + (n - 2) * 16;
++			else {
++				size_t offset = (size_t)t->parts[1].bin + (n - 2 - info_count) * 16;
++
++				if (offset > t->fw->size - 16)
++					return -EINVAL;
++				pos = offset;
++			}
++			if (pos > t->fw->size - 16)
++				return -EINVAL;
++			p->sram = get_unaligned_le32(data + pos);
++			p->size = get_unaligned_le32(data + pos + 4);
++			p->bin = get_unaligned_le32(data + pos + 8);
++			p->crc = get_unaligned_le32(data + pos + 12);
++			if (n < 2 + info_count && p->bin < end && p->size)
++				header_seen = true;
++		}
++		if (nvt_part_valid(t, p))
++			return -EINVAL;
++	}
++	if (!t->parts[0].size || !t->parts[1].size)
++		return -EINVAL;
++	return 0;
++}
++static int nvt_identify(struct nt36532_touch *t)
++{
++	u8 id[6], zero[6] = { 0 };
++	int ret, retry;
++
++	/* Match the stock trim-read flow: bootloader reset, clear, then read. */
++	for (retry = 0; retry < 5; retry++) {
++		ret = nvt_byte(t, NVT_RESET, 0x69);
++		if (ret)
++			return ret;
++		msleep(5);
++		ret = nvt_write(t, NVT_TRIM, zero, sizeof(zero));
++		if (ret)
++			return ret;
++		ret = nvt_read(t, NVT_TRIM, id, sizeof(id));
++		if (ret)
++			return ret;
++		if (id[3] == 0x32 && id[4] == 0x65 && id[5] == 0x03)
++			return 0;
++		msleep(10);
++	}
++	dev_err(&t->spi->dev, "unsupported trim ID %*ph\n", 6, id);
++	return -ENODEV;
++}
++
++static int nvt_crc_bank(struct nt36532_touch *t, unsigned int n)
++{
++	const struct nvt_partition *p = &t->parts[n];
++	int ret;
++
++	ret = nvt_le(t, n ? 0x1fb52c : 0x1fb528, p->sram, 3);
++	if (ret)
++		return ret;
++	ret = nvt_le(t, n ? 0x1fb530 : 0x1fb518, p->size, 3);
++	if (ret)
++		return ret;
++	return nvt_le(t, n ? 0x1fb504 : 0x1fb500, p->crc, 4);
++}
++static int nvt_download_once(struct nt36532_touch *t)
++{
++	u8 state, zero[6] = { 0 }, crc_cmd[2] = { 0xae, 0 };
++	unsigned int n, retry;
++	int ret;
++
++	ret = nvt_byte(t, NVT_RESET, 0x69);
++	if (ret)
++		return ret;
++	msleep(5);
++	for (n = 0; n < 2; n++) {
++		ret = nvt_crc_bank(t, n);
++		if (ret)
++			return ret;
++	}
++	if (t->cascade) {
++		ret = nvt_byte(t, NVT_AUTO_COPY, 0x56);
++		if (ret)
++			return ret;
++	}
++	for (n = 0; n < t->part_count; n++) {
++		const struct nvt_partition *p = &t->parts[n];
++		u32 offset = 0, remaining;
++
++		if (!p->size)
++			continue;
++		remaining = p->size + 1; /* Header length is inclusive (size-1). */
++		while (remaining) {
++			size_t bytes = min_t(size_t, remaining, NVT_CHUNK);
++
++			ret = nvt_write(t, p->sram + offset, t->fw->data + p->bin + offset, bytes);
++			if (ret)
++				return ret;
++			remaining -= bytes;
++			offset += bytes;
++		}
++	}
++	if (t->cascade) {
++		for (retry = 0; retry < 200; retry++) {
++			ret = nvt_read(t, NVT_AUTO_COPY, &state, 1);
++			if (ret)
++				return ret;
++			if (!state)
++				break;
++			usleep_range(1000, 1500);
++		}
++		if (retry == 200)
++			return -ETIMEDOUT;
++	}
++	ret = nvt_write(t, NVT_EVENT + 0x60, zero, sizeof(zero));
++	if (ret)
++		return ret;
++	ret = nvt_write(t, NVT_EVENT + 0x50, crc_cmd, sizeof(crc_cmd));
++	if (ret)
++		return ret;
++	ret = nvt_byte(t, NVT_BOOT_READY, 1);
++	if (ret)
++		return ret;
++	msleep(5);
++	for (retry = 0; retry < 50; retry++) {
++		ret = nvt_read(t, NVT_EVENT + 0x60, &state, 1);
++		if (ret)
++			return ret;
++		if (state >= 0xa1 && state <= 0xaf)
++			return 0;
++		msleep(10);
++	}
++	return -ETIMEDOUT;
++}
++static int nvt_download(struct nt36532_touch *t)
++{
++	int ret = -EIO, n;
++
++	for (n = 0; n < 3; n++) {
++		ret = nvt_download_once(t);
++		if (!ret)
++			break;
++	}
++	return ret;
++}
++static void nvt_release_contacts(struct nt36532_touch *t)
++{
++	int n;
++
++	for (n = 0; n < NVT_CONTACTS; n++) {
++		input_mt_slot(t->input, n);
++		input_mt_report_slot_state(t->input, MT_TOOL_FINGER, false);
++	}
++	input_mt_sync_frame(t->input);
++	input_sync(t->input);
++}
++static irqreturn_t nvt_irq(int irq, void *data)
++{
++	struct nt36532_touch *t = data;
++	u8 packet[NVT_REPORT_SIZE], sum = 0;
++	unsigned int n, seen = 0;
++	bool handshake = true, watchdog = true;
++	int ret;
++
++	mutex_lock(&t->io);
++	ret = nvt_read(t, NVT_EVENT, packet, sizeof(packet));
++	if (ret) {
++		dev_err_ratelimited(&t->spi->dev, "SPI report: %d\n", ret);
++		nvt_release_contacts(t);
++		goto out;
++	}
++	for (n = 0; n < 6; n++) {
++		handshake &= packet[n] == 0x77;
++		watchdog &= packet[n] == 0xfd || packet[n] == 0xfe;
++	}
++	t->watchdog = watchdog ? t->watchdog + 1 : 0;
++	if (handshake || t->watchdog > 10) {
++		nvt_release_contacts(t);
++		t->watchdog = 0;
++		ret = nvt_download(t);
++		if (ret)
++			dev_err_ratelimited(&t->spi->dev, "firmware recovery: %d\n", ret);
++		goto out;
++	}
++	/* Vendor checksum covers 64 bytes, followed by checksum byte. */
++	for (n = 0; n < 65; n++)
++		sum += packet[n];
++	if (sum)
++		goto out;
++	for (n = 0; n < NVT_CONTACTS; n++) {
++		const u8 *p = packet + n * 6;
++		unsigned int id = p[0] >> 3, state = p[0] & 7;
++		u16 x, y;
++
++		if (!id || id > NVT_CONTACTS || (state != 1 && state != 2))
++			continue;
++		if (seen & BIT(id - 1))
++			continue;
++		x = get_unaligned_be16(p + 1);
++		y = get_unaligned_be16(p + 3);
++		if (x > t->prop.max_x || y > t->prop.max_y)
++			continue;
++		seen |= BIT(id - 1);
++		input_mt_slot(t->input, id - 1);
++		input_mt_report_slot_state(t->input, MT_TOOL_FINGER, true);
++		touchscreen_report_pos(t->input, &t->prop, x, y, true);
++		input_report_abs(t->input, ABS_MT_TOUCH_MAJOR, max_t(u8, p[5], 1));
++		/* packet[0] is vendor point_data[1]; pressure index is 99+n. */
++		input_report_abs(t->input, ABS_MT_PRESSURE, max_t(u8, packet[98 + n], 1));
++	}
++	input_mt_sync_frame(t->input);
++	input_sync(t->input);
++out:
++	mutex_unlock(&t->io);
++	return IRQ_HANDLED;
++}
++static int nvt_start(struct nt36532_touch *t)
++{
++	int ret;
++
++	if (t->running || t->suspended || !t->prepared)
++		return 0;
++	mutex_lock(&t->io);
++	ret = nvt_identify(t);
++	if (!ret)
++		ret = nvt_download(t);
++	mutex_unlock(&t->io);
++	if (ret)
++		return ret;
++	t->watchdog = 0;
++	t->running = true;
++	enable_irq(t->spi->irq);
++	return 0;
++}
++static void nvt_stop(struct nt36532_touch *t)
++{
++	int ret;
++
++	if (!t->running)
++		return;
++	disable_irq(t->spi->irq); /* Never wait for the IRQ while io is held. */
++	mutex_lock(&t->io);
++	ret = nvt_byte(t, NVT_EVENT + 0x50, 0x11);
++	if (ret)
++		dev_warn(&t->spi->dev, "sleep command: %d\n", ret);
++	nvt_release_contacts(t);
++	mutex_unlock(&t->io);
++	t->running = false;
++	msleep(50);
++}
++static int nvt_panel_prepared(struct drm_panel_follower *f)
++{
++	struct nt36532_touch *t = container_of(f, struct nt36532_touch, follower);
++	int ret;
++
++	mutex_lock(&t->ctrl);
++	t->prepared = true;
++	ret = nvt_start(t);
++	mutex_unlock(&t->ctrl);
++	if (ret)
++		dev_err(&t->spi->dev, "touch start after panel prepare: %d\n", ret);
++	return ret;
++}
++static int nvt_panel_unpreparing(struct drm_panel_follower *f)
++{
++	struct nt36532_touch *t = container_of(f, struct nt36532_touch, follower);
++
++	mutex_lock(&t->ctrl);
++	nvt_stop(t);
++	t->prepared = false;
++	mutex_unlock(&t->ctrl);
++	return 0;
++}
++static const struct drm_panel_follower_funcs nvt_follower_funcs = {
++	.panel_prepared = nvt_panel_prepared,
++	.panel_unpreparing = nvt_panel_unpreparing,
++};
++static int nvt_suspend(struct device *dev)
++{
++	struct nt36532_touch *t = dev_get_drvdata(dev);
++
++	mutex_lock(&t->ctrl);
++	t->suspended = true;
++	nvt_stop(t);
++	mutex_unlock(&t->ctrl);
++	return 0;
++}
++static int nvt_resume(struct device *dev)
++{
++	struct nt36532_touch *t = dev_get_drvdata(dev);
++	int ret;
++
++	mutex_lock(&t->ctrl);
++	t->suspended = false;
++	ret = nvt_start(t);
++	mutex_unlock(&t->ctrl);
++	return ret;
++}
++static DEFINE_SIMPLE_DEV_PM_OPS(nvt_pm_ops, nvt_suspend, nvt_resume);
++static void nvt_fw_release(void *data) { release_firmware(data); }
++static void nvt_quiesce(void *data)
++{
++	struct nt36532_touch *t = data;
++
++	mutex_lock(&t->ctrl);
++	nvt_stop(t);
++	mutex_unlock(&t->ctrl);
++}
++static int nvt_probe(struct spi_device *spi)
++{
++	struct device *dev = &spi->dev;
++	struct nt36532_touch *t;
++	const char *name;
++	int ret;
++
++	if (spi->irq <= 0)
++		return dev_err_probe(dev, -EINVAL, "missing touch IRQ\n");
++	t = devm_kzalloc(dev, sizeof(*t), GFP_KERNEL);
++	if (!t)
++		return -ENOMEM;
++	t->spi = spi;
++	mutex_init(&t->ctrl);
++	mutex_init(&t->io);
++	t->tx = devm_kzalloc(dev, NVT_CHUNK + 2, GFP_KERNEL);
++	t->rx = devm_kzalloc(dev, NVT_CHUNK + 2, GFP_KERNEL);
++	if (!t->tx || !t->rx)
++		return -ENOMEM;
++	spi->mode = SPI_MODE_0;
++	spi->bits_per_word = 8;
++	ret = spi_setup(spi);
++	if (ret)
++		return ret;
++	ret = device_property_read_string(dev, "firmware-name", &name);
++	if (ret)
++		return dev_err_probe(dev, ret, "panel-specific firmware-name required\n");
++	ret = request_firmware(&t->fw, name, dev);
++	if (ret)
++		return dev_err_probe(dev, ret, "missing stock touch firmware %s\n", name);
++	ret = devm_add_action_or_reset(dev, nvt_fw_release, (void *)t->fw);
++	if (ret)
++		return ret;
++	ret = nvt_parse_firmware(t);
++	if (ret)
++		return dev_err_probe(dev, ret, "invalid NT36532 firmware\n");
++	t->input = devm_input_allocate_device(dev);
++	if (!t->input)
++		return -ENOMEM;
++	t->input->name = "Novatek NT36532 Touchscreen";
++	t->input->id.bustype = BUS_SPI;
++	input_set_abs_params(t->input, ABS_MT_POSITION_X, 0, 18400, 0, 0);
++	input_set_abs_params(t->input, ABS_MT_POSITION_Y, 0, 29440, 0, 0);
++	input_set_abs_params(t->input, ABS_MT_TOUCH_MAJOR, 0, 255, 0, 0);
++	input_set_abs_params(t->input, ABS_MT_PRESSURE, 0, 255, 0, 0);
++	touchscreen_parse_properties(t->input, true, &t->prop);
++	ret = input_mt_init_slots(t->input, NVT_CONTACTS, INPUT_MT_DIRECT | INPUT_MT_DROP_UNUSED);
++	if (ret)
++		return ret;
++	ret = input_register_device(t->input);
++	if (ret)
++		return ret;
++	spi_set_drvdata(spi, t);
++	ret = devm_request_threaded_irq(dev, spi->irq, NULL, nvt_irq,
++					IRQF_ONESHOT | IRQF_NO_AUTOEN, dev_name(dev), t);
++	if (ret)
++		return ret;
++	ret = devm_add_action_or_reset(dev, nvt_quiesce, t);
++	if (ret)
++		return ret;
++	t->follower.funcs = &nvt_follower_funcs;
++	return devm_drm_panel_add_follower(dev, &t->follower);
++}
++static void nvt_shutdown(struct spi_device *spi) { nvt_quiesce(spi_get_drvdata(spi)); }
++static const struct of_device_id nvt_match[] = {
++	{ .compatible = "novatek,nt36532-spi" }, { }
++};
++MODULE_DEVICE_TABLE(of, nvt_match);
++static const struct spi_device_id nvt_ids[] = { { "nt36532-spi", 0 }, { } };
++MODULE_DEVICE_TABLE(spi, nvt_ids);
++static struct spi_driver nvt_driver = {
++	.probe = nvt_probe,
++	.shutdown = nvt_shutdown,
++	.id_table = nvt_ids,
++	.driver = { .name = "nt36532-spi", .of_match_table = nvt_match,
++		    .pm = pm_sleep_ptr(&nvt_pm_ops) },
++};
++module_spi_driver(nvt_driver);
++MODULE_DESCRIPTION("Novatek NT36532 TB520FU no-flash SPI touchscreen");
++MODULE_LICENSE("GPL");

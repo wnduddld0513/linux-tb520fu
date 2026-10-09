@@ -2,8 +2,14 @@
 
 This branch is the TB520FU development fork of
 [enij90/armada-tb321fu](https://github.com/enij90/armada-tb321fu).
-The port is being prepared; the inherited TB321FU hardware support and installation
-instructions below do **not** establish TB520FU compatibility.
+TB520FU-specific Tianma/BOE NT36532 panel, NT36532 SPI multitouch and synchronized
+dual KTZ8866 backlight sources are now included, with separate TB520FU device trees
+and a local stock-firmware packer. This is initial bring-up code, **not compiled or
+verified on hardware**. The inherited TB321FU installation instructions below do
+not establish TB520FU compatibility.
+
+See [TB520FU port status and stock-source evidence](tb520fu/PORTING.md) for the
+implemented wiring, DTB selection, firmware preparation and remaining work.
 
 ## Fork-only development
 

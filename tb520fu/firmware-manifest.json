@@ -1,0 +1,35 @@
+{
+  "description": "Local Lenovo TB520FU stock firmware used for display/touch bring-up. Payloads are intentionally untracked.",
+  "files": {
+    "novatek_ts_tianma_fw.bin": {
+      "source": "vendor/firmware/novatek_ts_tianma_fw.bin",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/novatek_ts_tianma_fw.bin",
+      "size": 245760,
+      "sha256": "d9dd38f8b7a72dab952eabd75d91aec6325a7dc91de8a7fb1b5973b57b9b828d"
+    },
+    "novatek_ts_boe_fw.bin": {
+      "source": "vendor/firmware/novatek_ts_boe_fw.bin",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/novatek_ts_boe_fw.bin",
+      "size": 245760,
+      "sha256": "e4ab929a60292f58bbcd42d6bd4e8907bdd39ae260a600221e8354ed20002ad9"
+    },
+    "gen70900_zap.mbn": {
+      "source": "vendor/firmware/gen70900_zap.mbn",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/gen70900_zap.mbn",
+      "size": 12088,
+      "sha256": "12124bbaa8aaaa2ee595bb2b6005ac4cf1ebb9e4715ed006159bf78e65ab5eca"
+    },
+    "gen70900_sqe.fw": {
+      "source": "vendor/firmware/gen70900_sqe.fw",
+      "destination": "usr/lib/firmware/qcom/gen70900_sqe.fw",
+      "size": 85364,
+      "sha256": "f756bafe5f69a87161c7c53385386374a791861a574c244e845baba677993842"
+    },
+    "gmu_gen70900.bin": {
+      "source": "vendor/firmware/gmu_gen70900.bin",
+      "destination": "usr/lib/firmware/qcom/gmu_gen70900.bin",
+      "size": 78588,
+      "sha256": "9685f62c42543befcaee68d25355e16bf55cdb0d573bddcc9f6633f59eec3f72"
+    }
+  }
+}

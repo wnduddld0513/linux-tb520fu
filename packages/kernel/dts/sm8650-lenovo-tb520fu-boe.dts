@@ -1,0 +1,6 @@
+// SPDX-License-Identifier: BSD-3-Clause
+/dts-v1/;
+#include "sm8650-lenovo-tb520fu.dtsi"
+/ { model = "Lenovo Yoga Tab Plus / TB520FU (BOE)"; };
+&display_panel { compatible = "lenovo,tb520fu-boe-nt36532"; };
+&touchscreen { firmware-name = "qcom/sm8650/lenovo/tb520fu/novatek_ts_boe_fw.bin"; };

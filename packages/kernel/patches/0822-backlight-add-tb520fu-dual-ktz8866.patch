@@ -1,0 +1,182 @@
+From: TB520FU fork maintainers
+Subject: [PATCH] backlight: synchronize TB520FU KTZ8866 pair
+
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -199,6 +199,13 @@
+ 	  Say Y to enable the backlight driver for the Kinetic KTD2801 1-wire
+ 	  GPIO-controlled backlight found in Samsung Galaxy Core Prime VE LTE.
+ 
++config BACKLIGHT_TB520FU_KTZ8866
++	tristate "Lenovo TB520FU dual KTZ8866 backlight"
++	depends on I2C && OF && GPIOLIB
++	select REGMAP_I2C
++	help
++	  Synchronize the two KTZ8866 chips and their shared enable GPIO.
++
+ config BACKLIGHT_KTZ8866
+ 	tristate "Backlight Driver for Kinetic KTZ8866"
+ 	depends on I2C
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -65,3 +65,4 @@
+ obj-$(CONFIG_BACKLIGHT_ARCXCNN) 	+= arcxcnn_bl.o
+ obj-$(CONFIG_BACKLIGHT_RAVE_SP)		+= rave-sp-backlight.o
+ obj-$(CONFIG_BACKLIGHT_LED)		+= led_bl.o
++obj-$(CONFIG_BACKLIGHT_TB520FU_KTZ8866) += tb520fu-ktz8866.o
+diff --git a/drivers/video/backlight/tb520fu-ktz8866.c b/drivers/video/backlight/tb520fu-ktz8866.c
+--- /dev/null
++++ b/drivers/video/backlight/tb520fu-ktz8866.c
+@@ -0,0 +1,150 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/* Synchronized KTZ8866 pair, using TB520FU stock init-cmds. */
++#include <linux/backlight.h>
++#include <linux/delay.h>
++#include <linux/gpio/consumer.h>
++#include <linux/i2c.h>
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/of.h>
++#include <linux/regmap.h>
++
++struct tb520fu_backlight {
++	struct regmap *map[2];
++	struct gpio_desc *enable;
++	struct mutex lock;
++};
++static const struct regmap_config tb520fu_regmap = {
++	.reg_bits = 8, .val_bits = 8, .max_register = 0x15,
++};
++static const struct reg_sequence tb520fu_common[] = {
++	{ 0x03, 0xc5 }, { 0x02, 0xfb }, { 0x14, 0x88 },
++	{ 0x11, 0x37 }, { 0x15, 0x9d },
++	/* Start dark. DRM turns on both LED strings after panel preparation. */
++	{ 0x04, 0 }, { 0x05, 0 }, { 0x08, 0 },
++};
++static const struct reg_sequence tb520fu_bias[] = {
++	{ 0x0c, 0x2e }, { 0x0d, 0x24 }, { 0x0e, 0x24 }, { 0x09, 0x9f },
++};
++static int tb520fu_bl_update(struct backlight_device *bl)
++{
++	struct tb520fu_backlight *p = bl_get_data(bl);
++	unsigned int value = backlight_get_brightness(bl);
++	int i, ret = 0;
++
++	mutex_lock(&p->lock);
++	for (i = 0; i < ARRAY_SIZE(p->map); i++) {
++		ret = regmap_write(p->map[i], 0x04, value & 7);
++		if (ret)
++			break;
++		ret = regmap_write(p->map[i], 0x05, value >> 3);
++		if (ret)
++			break;
++		ret = regmap_write(p->map[i], 0x08, value ? 0x7f : 0);
++		if (ret)
++			break;
++	}
++	if (ret) {
++		/* Do not leave one half illuminated after a failed I2C transfer. */
++		regmap_write(p->map[0], 0x08, 0);
++		regmap_write(p->map[1], 0x08, 0);
++	}
++	mutex_unlock(&p->lock);
++	return ret;
++}
++static const struct backlight_ops tb520fu_bl_ops = {
++	.options = BL_CORE_SUSPENDRESUME,
++	.update_status = tb520fu_bl_update,
++};
++static void tb520fu_peer_put(void *data) { put_device(data); }
++static void tb520fu_map_exit(void *data) { regmap_exit(data); }
++static void tb520fu_bl_off(void *data)
++{
++	struct tb520fu_backlight *p = data;
++
++	regmap_write(p->map[0], 0x08, 0);
++	regmap_write(p->map[1], 0x08, 0);
++	/* Keep HWEN high: it also powers panel bias until panel unprepare. */
++}
++static int tb520fu_bl_probe(struct i2c_client *client)
++{
++	struct device *dev = &client->dev;
++	struct tb520fu_backlight *p;
++	struct i2c_client *peer;
++	struct device_node *node;
++	struct backlight_device *bl;
++	struct backlight_properties props = {
++		.type = BACKLIGHT_RAW, .max_brightness = 2047,
++		.brightness = 1027, .power = BACKLIGHT_POWER_OFF,
++	};
++	int ret, i;
++
++	p = devm_kzalloc(dev, sizeof(*p), GFP_KERNEL);
++	if (!p)
++		return -ENOMEM;
++	mutex_init(&p->lock);
++	node = of_parse_phandle(dev->of_node, "lenovo,backlight-peer", 0);
++	if (!node)
++		return -EINVAL;
++	peer = of_find_i2c_device_by_node(node);
++	of_node_put(node);
++	if (!peer)
++		return -EPROBE_DEFER;
++	/* Peer intentionally has no bound driver: only this owner programs it. */
++	if (peer->dev.driver) {
++		put_device(&peer->dev);
++		return -EBUSY;
++	}
++	ret = devm_add_action_or_reset(dev, tb520fu_peer_put, &peer->dev);
++	if (ret)
++		return ret;
++	p->map[0] = devm_regmap_init_i2c(client, &tb520fu_regmap);
++	if (IS_ERR(p->map[0]))
++		return PTR_ERR(p->map[0]);
++	p->map[1] = regmap_init_i2c(peer, &tb520fu_regmap);
++	if (IS_ERR(p->map[1]))
++		return PTR_ERR(p->map[1]);
++	ret = devm_add_action_or_reset(dev, tb520fu_map_exit, p->map[1]);
++	if (ret)
++		return ret;
++	p->enable = devm_gpiod_get(dev, "enable", GPIOD_OUT_HIGH);
++	if (IS_ERR(p->enable))
++		return dev_err_probe(dev, PTR_ERR(p->enable), "shared HWEN\n");
++	usleep_range(1000, 1500);
++	ret = devm_add_action_or_reset(dev, tb520fu_bl_off, p);
++	if (ret)
++		return ret;
++	ret = regmap_multi_reg_write(p->map[0], tb520fu_bias, ARRAY_SIZE(tb520fu_bias));
++	if (ret)
++		return ret;
++	for (i = 0; i < ARRAY_SIZE(p->map); i++) {
++		ret = regmap_multi_reg_write(p->map[i], tb520fu_common, ARRAY_SIZE(tb520fu_common));
++		if (ret)
++			return ret;
++	}
++	bl = devm_backlight_device_register(dev, "tb520fu-backlight", dev, p,
++					   &tb520fu_bl_ops, &props);
++	if (IS_ERR(bl))
++		return PTR_ERR(bl);
++	i2c_set_clientdata(client, bl);
++	return backlight_update_status(bl);
++}
++static void tb520fu_bl_shutdown(struct i2c_client *client)
++{
++	struct backlight_device *bl = i2c_get_clientdata(client);
++
++	bl->props.power = BACKLIGHT_POWER_OFF;
++	backlight_update_status(bl);
++}
++static const struct of_device_id tb520fu_bl_match[] = {
++	{ .compatible = "lenovo,tb520fu-ktz8866" }, { }
++};
++MODULE_DEVICE_TABLE(of, tb520fu_bl_match);
++static struct i2c_driver tb520fu_bl_driver = {
++	.probe = tb520fu_bl_probe,
++	.shutdown = tb520fu_bl_shutdown,
++	.driver = { .name = "tb520fu-ktz8866", .of_match_table = tb520fu_bl_match },
++};
++module_i2c_driver(tb520fu_bl_driver);
++MODULE_DESCRIPTION("Lenovo TB520FU synchronized dual KTZ8866 backlight");
++MODULE_LICENSE("GPL");

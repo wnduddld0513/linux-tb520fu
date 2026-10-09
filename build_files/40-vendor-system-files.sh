@@ -97,6 +97,8 @@ systemctl enable armada-installer-visibility.service
 systemctl enable armada-steamapps.service
 systemctl enable armada-powerd.service
 systemctl enable armada-control.service
+# TB520FU stock display/touch dependencies are supplied locally by the packer.
+/ctx/build_files/tb520fu-firmware.sh
 # Lenovo TB321FU proprietary firmware (separate repo, see tb321fu-firmware.env)
 /ctx/build_files/tb321fu-firmware.sh
 # Lenovo TB321FU sensor stack (packages/tb321fu-sensors)

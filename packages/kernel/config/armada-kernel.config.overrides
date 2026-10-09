@@ -396,3 +396,8 @@ CONFIG_INPUT_AW86937_Y700=m               # AW86937 vibration motors (TB321FU, p
 # TB321FU: the kernel Image ships in super separately from the rootfs modules; let
 # modules built against an older vmlinux load without BTF instead of being refused
 CONFIG_MODULE_ALLOW_BTF_MISMATCH=y
+
+# Lenovo Yoga Tab Plus / TB520FU (distinct NT36532 and dual-backlight drivers)
+CONFIG_DRM_PANEL_NOVATEK_NT36532=y
+CONFIG_BACKLIGHT_TB520FU_KTZ8866=y
+CONFIG_TOUCHSCREEN_NT36532_SPI=m

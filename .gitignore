@@ -8,3 +8,7 @@ __pycache__/
 
 # Local copy of the TB321FU firmware tarball (proprietary, never commit)
 build_files/firmware-lenovo-tb321fu-*.tar.gz
+
+# Local TB520FU stock firmware payload and checksum (never publish blobs)
+build_files/firmware-lenovo-tb520fu.tar.gz
+build_files/firmware-lenovo-tb520fu.tar.gz.sha256

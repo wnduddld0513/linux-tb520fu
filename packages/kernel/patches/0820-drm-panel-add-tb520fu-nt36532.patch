@@ -1,0 +1,619 @@
+From: TB520FU fork maintainers
+Subject: [PATCH] drm/panel: add TB520FU NT36532 Tianma and BOE panels
+
+diff --git a/drivers/gpu/drm/panel/Kconfig b/drivers/gpu/drm/panel/Kconfig
+--- a/drivers/gpu/drm/panel/Kconfig
++++ b/drivers/gpu/drm/panel/Kconfig
+@@ -734,6 +734,14 @@
+ 	  uses dual-DSI C-PHY with DSC 1.1 compression.
+ 
+ 
++config DRM_PANEL_NOVATEK_NT36532
++	tristate "Lenovo TB520FU Novatek NT36532 dual DSI panel"
++	depends on OF && GPIOLIB && DRM_MIPI_DSI && BACKLIGHT_CLASS_DEVICE
++	select DRM_DISPLAY_HELPER
++	select DRM_DISPLAY_DP_HELPER
++	help
++	  Tianma and BOE 2944x1840 dual D-PHY DSC panels on Lenovo Yoga Tab Plus.
++
+ config DRM_PANEL_NOVATEK_NT36672A
+ 	tristate "Novatek NT36672A DSI panel"
+ 	depends on GPIOLIB
+diff --git a/drivers/gpu/drm/panel/Makefile b/drivers/gpu/drm/panel/Makefile
+--- a/drivers/gpu/drm/panel/Makefile
++++ b/drivers/gpu/drm/panel/Makefile
+@@ -70,6 +70,7 @@
+ obj-$(CONFIG_DRM_PANEL_NOVATEK_NT35950) += panel-novatek-nt35950.o
+ obj-$(CONFIG_DRM_PANEL_NOVATEK_NT36523) += panel-novatek-nt36523.o
+ obj-$(CONFIG_DRM_PANEL_NOVATEK_NT36523_KIRBY) += panel-novatek-nt36523-kirby.o
++obj-$(CONFIG_DRM_PANEL_NOVATEK_NT36532) += panel-novatek-nt36532.o
+ obj-$(CONFIG_DRM_PANEL_NOVATEK_NT36672A) += panel-novatek-nt36672a.o
+ obj-$(CONFIG_DRM_PANEL_NOVATEK_NT36672E) += panel-novatek-nt36672e.o
+ obj-$(CONFIG_DRM_PANEL_NOVATEK_NT37700F) += panel-novatek-nt37700f.o
+diff --git a/drivers/gpu/drm/panel/panel-novatek-nt36532.c b/drivers/gpu/drm/panel/panel-novatek-nt36532.c
+--- /dev/null
++++ b/drivers/gpu/drm/panel/panel-novatek-nt36532.c
+@@ -0,0 +1,583 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Lenovo Yoga Tab Plus / TB520FU NT36532 dual D-PHY panel.
++ * Command tables and reset delays: Lenovo stock running.dts, lapis Tianma/BOE.
++ * Native scan: 2944x1840, 120 Hz; DSC 1.1 SCR1, 10 bpc, 8 bpp.
++ * This is a bring-up driver; hardware operation has not been verified.
++ */
++#include <linux/delay.h>
++#include <linux/gpio/consumer.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/of_graph.h>
++#include <linux/regulator/consumer.h>
++#include <video/mipi_display.h>
++#include <drm/display/drm_dsc.h>
++#include <drm/display/drm_dsc_helper.h>
++#include <drm/drm_connector.h>
++#include <drm/drm_mipi_dsi.h>
++#include <drm/drm_modes.h>
++#include <drm/drm_panel.h>
++
++struct nt36532_cmd {
++	u8 type, delay_ms, len;
++	u8 data[32];
++};
++struct nt36532_desc {
++	const struct nt36532_cmd *on, *off;
++	size_t on_count, off_count;
++};
++struct nt36532_panel {
++	struct drm_panel panel;
++	struct mipi_dsi_device *dsi[2];
++	struct drm_dsc_config dsc;
++	struct regulator_bulk_data supplies[3];
++	struct regulator *enp, *enn;
++	struct gpio_desc *reset;
++	const struct nt36532_desc *desc;
++	enum drm_panel_orientation orientation;
++};
++#define to_nt36532(p) container_of(p, struct nt36532_panel, panel)
++
++static const struct nt36532_cmd tianma_on[] = {
++	{ 0x39, 0, 2, { 0xff, 0x10 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 2, { 0xf0, 0xaa } },
++	{ 0x39, 0, 2, { 0xf1, 0x55 } },
++	{ 0x39, 0, 2, { 0xf2, 0x99 } },
++	{ 0x39, 0, 2, { 0xff, 0x20 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 2, { 0x0d, 0x43 } },
++	{ 0x39, 0, 2, { 0x32, 0x72 } },
++	{ 0x39, 0, 2, { 0x69, 0xdd } },
++	{ 0x39, 0, 2, { 0xff, 0x23 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 3, { 0xba, 0x1f, 0x97 } },
++	{ 0x39, 0, 3, { 0xbb, 0x1d, 0x97 } },
++	{ 0x39, 0, 3, { 0xb1, 0x1c, 0x97 } },
++	{ 0x39, 0, 4, { 0xbc, 0x0d, 0x00, 0x00 } },
++	{ 0x39, 0, 2, { 0xff, 0x24 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 2, { 0xda, 0x06 } },
++	{ 0x39, 0, 2, { 0xff, 0x25 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 2, { 0x0f, 0x20 } },
++	{ 0x39, 0, 2, { 0xff, 0x27 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 2, { 0x13, 0x00 } },
++	{ 0x39, 0, 2, { 0x7d, 0x01 } },
++	{ 0x39, 0, 2, { 0x7e, 0x0a } },
++	{ 0x39, 0, 2, { 0x7f, 0x01 } },
++	{ 0x39, 0, 2, { 0xd0, 0x71 } },
++	{ 0x39, 0, 2, { 0xd1, 0x84 } },
++	{ 0x39, 0, 2, { 0xd2, 0x38 } },
++	{ 0x39, 0, 2, { 0xde, 0x43 } },
++	{ 0x39, 0, 2, { 0xdf, 0x02 } },
++	{ 0x39, 0, 2, { 0xff, 0x2a } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 3, { 0xb1, 0x00, 0x01 } },
++	{ 0x39, 0, 2, { 0xff, 0x23 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 2, { 0x00, 0x60 } },
++	{ 0x39, 0, 2, { 0x05, 0x24 } },
++	{ 0x39, 0, 2, { 0x07, 0x20 } },
++	{ 0x39, 0, 2, { 0x08, 0x01 } },
++	{ 0x39, 0, 2, { 0x09, 0xc2 } },
++	{ 0x39, 0, 2, { 0x10, 0x00 } },
++	{ 0x39, 0, 2, { 0x11, 0x03 } },
++	{ 0x39, 0, 2, { 0x12, 0x41 } },
++	{ 0x39, 0, 2, { 0x15, 0x64 } },
++	{ 0x39, 0, 2, { 0x16, 0x15 } },
++	{ 0x39, 0, 2, { 0x30, 0xff } },
++	{ 0x39, 0, 2, { 0x31, 0xff } },
++	{ 0x39, 0, 2, { 0x32, 0xff } },
++	{ 0x39, 0, 2, { 0x33, 0xfc } },
++	{ 0x39, 0, 2, { 0x34, 0xf9 } },
++	{ 0x39, 0, 2, { 0x35, 0xf5 } },
++	{ 0x39, 0, 2, { 0x36, 0xf2 } },
++	{ 0x39, 0, 2, { 0x37, 0xf0 } },
++	{ 0x39, 0, 2, { 0x38, 0xed } },
++	{ 0x39, 0, 2, { 0x39, 0xeb } },
++	{ 0x39, 0, 2, { 0x3a, 0xe8 } },
++	{ 0x39, 0, 2, { 0x3b, 0xe5 } },
++	{ 0x39, 0, 2, { 0x3d, 0xe3 } },
++	{ 0x39, 0, 2, { 0x3f, 0xe0 } },
++	{ 0x39, 0, 2, { 0x40, 0xde } },
++	{ 0x39, 0, 2, { 0x41, 0xdb } },
++	{ 0x39, 0, 2, { 0x58, 0xff } },
++	{ 0x39, 0, 2, { 0x59, 0xff } },
++	{ 0x39, 0, 2, { 0x5a, 0xfa } },
++	{ 0x39, 0, 2, { 0x5b, 0xf7 } },
++	{ 0x39, 0, 2, { 0x5c, 0xf2 } },
++	{ 0x39, 0, 2, { 0x5d, 0xeb } },
++	{ 0x39, 0, 2, { 0x5e, 0xe3 } },
++	{ 0x39, 0, 2, { 0x5f, 0xd9 } },
++	{ 0x39, 0, 2, { 0x60, 0xd1 } },
++	{ 0x39, 0, 2, { 0x61, 0xcc } },
++	{ 0x39, 0, 2, { 0x62, 0xc7 } },
++	{ 0x39, 0, 2, { 0x63, 0xbf } },
++	{ 0x39, 0, 2, { 0x64, 0xba } },
++	{ 0x39, 0, 2, { 0x65, 0xb5 } },
++	{ 0x39, 0, 2, { 0x66, 0xb0 } },
++	{ 0x39, 0, 2, { 0x67, 0xab } },
++	{ 0x39, 0, 2, { 0x19, 0x00 } },
++	{ 0x39, 0, 2, { 0x1a, 0x02 } },
++	{ 0x39, 0, 2, { 0x1b, 0x04 } },
++	{ 0x39, 0, 2, { 0x1c, 0x08 } },
++	{ 0x39, 0, 2, { 0x1d, 0x0e } },
++	{ 0x39, 0, 2, { 0x1e, 0x14 } },
++	{ 0x39, 0, 2, { 0x1f, 0x18 } },
++	{ 0x39, 0, 2, { 0x20, 0x1e } },
++	{ 0x39, 0, 2, { 0x21, 0x22 } },
++	{ 0x39, 0, 2, { 0x22, 0x26 } },
++	{ 0x39, 0, 2, { 0x23, 0x2a } },
++	{ 0x39, 0, 2, { 0x24, 0x30 } },
++	{ 0x39, 0, 2, { 0x25, 0x34 } },
++	{ 0x39, 0, 2, { 0x26, 0x38 } },
++	{ 0x39, 0, 2, { 0x27, 0x3c } },
++	{ 0x39, 0, 2, { 0x28, 0x3f } },
++	{ 0x39, 0, 2, { 0x29, 0x10 } },
++	{ 0x39, 0, 2, { 0x2b, 0x28 } },
++	{ 0x39, 0, 2, { 0xff, 0x10 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 7, { 0x3b, 0x03, 0xb8, 0x1a, 0x0a, 0x0a, 0x00 } },
++	{ 0x39, 0, 2, { 0xff, 0x10 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 3, { 0x51, 0x07, 0xff } },
++	{ 0x39, 0, 2, { 0x53, 0x2c } },
++	{ 0x39, 0, 2, { 0x55, 0x01 } },
++	{ 0x39, 0, 17, { 0x81, 0x02, 0x02, 0x22, 0x00, 0x2a, 0x40, 0x2a, 0xbe, 0x3a, 0xfc, 0x3a, 0xfa, 0x3a, 0xf8, 0x3b, 0x38 } },
++	{ 0x39, 0, 15, { 0x82, 0x3b, 0x78, 0x3b, 0xb6, 0x4b, 0xb6, 0x4b, 0xf4, 0x4b, 0xf4, 0x6c, 0x34, 0x84, 0x74 } },
++	{ 0x39, 0, 2, { 0x90, 0x83 } },
++	{ 0x39, 0, 17, { 0x91, 0xab, 0x28, 0x00, 0x14, 0xf2, 0x00, 0x02, 0xce, 0x01, 0xb0, 0x00, 0x0a, 0x06, 0x51, 0x03, 0xc0 } },
++	{ 0x39, 0, 3, { 0x92, 0x11, 0x00 } },
++	{ 0x05, 105, 1, { 0x11 } },
++	{ 0x05, 40, 1, { 0x29 } },
++	{ 0x39, 0, 2, { 0xff, 0x10 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 2, { 0xf0, 0x55 } },
++	{ 0x39, 0, 2, { 0xf1, 0xaa } },
++	{ 0x39, 0, 2, { 0xf2, 0x66 } },
++};
++
++static const struct nt36532_cmd tianma_off[] = {
++	{ 0x39, 0, 2, { 0xff, 0x10 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 2, { 0xf0, 0xaa } },
++	{ 0x39, 0, 2, { 0xf1, 0x55 } },
++	{ 0x39, 0, 2, { 0xf2, 0x99 } },
++	{ 0x39, 0, 2, { 0x53, 0x28 } },
++	{ 0x05, 0, 1, { 0x28 } },
++	{ 0x05, 100, 1, { 0x10 } },
++	{ 0x39, 0, 2, { 0xff, 0x10 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 2, { 0xf0, 0x55 } },
++	{ 0x39, 0, 2, { 0xf1, 0xaa } },
++	{ 0x39, 0, 2, { 0xf2, 0x66 } },
++};
++
++static const struct nt36532_desc tianma_desc = {
++	.on = tianma_on, .on_count = ARRAY_SIZE(tianma_on),
++	.off = tianma_off, .off_count = ARRAY_SIZE(tianma_off),
++};
++
++static const struct nt36532_cmd boe_on[] = {
++	{ 0x39, 0, 2, { 0xff, 0x10 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 2, { 0xf0, 0xaa } },
++	{ 0x39, 0, 2, { 0xf1, 0x55 } },
++	{ 0x39, 0, 2, { 0xf2, 0x99 } },
++	{ 0x39, 0, 2, { 0xff, 0x20 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 2, { 0x32, 0x72 } },
++	{ 0x39, 0, 2, { 0xff, 0x10 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 7, { 0x3b, 0x03, 0xb8, 0x1a, 0x0a, 0x0a, 0x00 } },
++	{ 0x39, 0, 2, { 0xff, 0x27 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 2, { 0xd0, 0x71 } },
++	{ 0x39, 0, 2, { 0xd1, 0x84 } },
++	{ 0x39, 0, 2, { 0xd2, 0x38 } },
++	{ 0x39, 0, 2, { 0xde, 0x43 } },
++	{ 0x39, 0, 2, { 0xdf, 0x02 } },
++	{ 0x39, 0, 2, { 0xff, 0x25 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 2, { 0x0f, 0x20 } },
++	{ 0x39, 0, 2, { 0xff, 0x26 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 2, { 0x13, 0xb5 } },
++	{ 0x39, 0, 2, { 0xff, 0x23 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 2, { 0x00, 0x60 } },
++	{ 0x39, 0, 2, { 0x07, 0x20 } },
++	{ 0x39, 0, 2, { 0x08, 0x01 } },
++	{ 0x39, 0, 2, { 0x09, 0xc2 } },
++	{ 0x39, 0, 2, { 0x10, 0x00 } },
++	{ 0x39, 0, 2, { 0x11, 0x03 } },
++	{ 0x39, 0, 2, { 0x12, 0x41 } },
++	{ 0x39, 0, 2, { 0x15, 0x64 } },
++	{ 0x39, 0, 2, { 0x16, 0x15 } },
++	{ 0x39, 0, 2, { 0x30, 0xff } },
++	{ 0x39, 0, 2, { 0x31, 0xff } },
++	{ 0x39, 0, 2, { 0x32, 0xff } },
++	{ 0x39, 0, 2, { 0x33, 0xfc } },
++	{ 0x39, 0, 2, { 0x34, 0xf9 } },
++	{ 0x39, 0, 2, { 0x35, 0xf5 } },
++	{ 0x39, 0, 2, { 0x36, 0xf2 } },
++	{ 0x39, 0, 2, { 0x37, 0xf0 } },
++	{ 0x39, 0, 2, { 0x38, 0xed } },
++	{ 0x39, 0, 2, { 0x39, 0xeb } },
++	{ 0x39, 0, 2, { 0x3a, 0xe8 } },
++	{ 0x39, 0, 2, { 0x3b, 0xe5 } },
++	{ 0x39, 0, 2, { 0x3d, 0xe3 } },
++	{ 0x39, 0, 2, { 0x3f, 0xe0 } },
++	{ 0x39, 0, 2, { 0x40, 0xde } },
++	{ 0x39, 0, 2, { 0x41, 0xdb } },
++	{ 0x39, 0, 2, { 0x58, 0xff } },
++	{ 0x39, 0, 2, { 0x59, 0xff } },
++	{ 0x39, 0, 2, { 0x5a, 0xfa } },
++	{ 0x39, 0, 2, { 0x5b, 0xf7 } },
++	{ 0x39, 0, 2, { 0x5c, 0xf2 } },
++	{ 0x39, 0, 2, { 0x5d, 0xeb } },
++	{ 0x39, 0, 2, { 0x5e, 0xe3 } },
++	{ 0x39, 0, 2, { 0x5f, 0xd9 } },
++	{ 0x39, 0, 2, { 0x60, 0xd1 } },
++	{ 0x39, 0, 2, { 0x61, 0xcc } },
++	{ 0x39, 0, 2, { 0x62, 0xc7 } },
++	{ 0x39, 0, 2, { 0x63, 0xbf } },
++	{ 0x39, 0, 2, { 0x64, 0xba } },
++	{ 0x39, 0, 2, { 0x65, 0xb5 } },
++	{ 0x39, 0, 2, { 0x66, 0xb0 } },
++	{ 0x39, 0, 2, { 0x67, 0xab } },
++	{ 0x39, 0, 2, { 0x19, 0x00 } },
++	{ 0x39, 0, 2, { 0x1a, 0x02 } },
++	{ 0x39, 0, 2, { 0x1b, 0x04 } },
++	{ 0x39, 0, 2, { 0x1c, 0x08 } },
++	{ 0x39, 0, 2, { 0x1d, 0x0e } },
++	{ 0x39, 0, 2, { 0x1e, 0x14 } },
++	{ 0x39, 0, 2, { 0x1f, 0x18 } },
++	{ 0x39, 0, 2, { 0x20, 0x1e } },
++	{ 0x39, 0, 2, { 0x21, 0x22 } },
++	{ 0x39, 0, 2, { 0x22, 0x26 } },
++	{ 0x39, 0, 2, { 0x23, 0x2a } },
++	{ 0x39, 0, 2, { 0x24, 0x30 } },
++	{ 0x39, 0, 2, { 0x25, 0x34 } },
++	{ 0x39, 0, 2, { 0x26, 0x38 } },
++	{ 0x39, 0, 2, { 0x27, 0x3c } },
++	{ 0x39, 0, 2, { 0x28, 0x3f } },
++	{ 0x39, 0, 2, { 0x29, 0x10 } },
++	{ 0x39, 0, 2, { 0x2b, 0x28 } },
++	{ 0x39, 0, 2, { 0xff, 0x10 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 3, { 0x51, 0x07, 0xff } },
++	{ 0x39, 0, 2, { 0x53, 0x2c } },
++	{ 0x39, 0, 2, { 0x55, 0x01 } },
++	{ 0x39, 0, 2, { 0x90, 0x03 } },
++	{ 0x39, 0, 17, { 0x91, 0xab, 0x28, 0x00, 0x14, 0xf2, 0x00, 0x02, 0xce, 0x01, 0xb0, 0x00, 0x0a, 0x06, 0x51, 0x03, 0xc0 } },
++	{ 0x39, 0, 3, { 0x92, 0x11, 0x00 } },
++	{ 0x05, 105, 1, { 0x11 } },
++	{ 0x05, 40, 1, { 0x29 } },
++	{ 0x39, 0, 2, { 0xff, 0x10 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 2, { 0xf0, 0x55 } },
++	{ 0x39, 0, 2, { 0xf1, 0xaa } },
++	{ 0x39, 0, 2, { 0xf2, 0x66 } },
++};
++
++static const struct nt36532_cmd boe_off[] = {
++	{ 0x39, 0, 2, { 0xff, 0x10 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 2, { 0xf0, 0xaa } },
++	{ 0x39, 0, 2, { 0xf1, 0x55 } },
++	{ 0x39, 0, 2, { 0xf2, 0x99 } },
++	{ 0x05, 15, 1, { 0x28 } },
++	{ 0x05, 100, 1, { 0x10 } },
++	{ 0x39, 0, 2, { 0xff, 0x10 } },
++	{ 0x39, 0, 2, { 0xfb, 0x01 } },
++	{ 0x39, 0, 2, { 0xf0, 0x55 } },
++	{ 0x39, 0, 2, { 0xf1, 0xaa } },
++	{ 0x39, 0, 2, { 0xf2, 0x66 } },
++};
++
++static const struct nt36532_desc boe_desc = {
++	.on = boe_on, .on_count = ARRAY_SIZE(boe_on),
++	.off = boe_off, .off_count = ARRAY_SIZE(boe_off),
++};
++
++
++static const struct drm_display_mode nt36532_mode = {
++	.clock = 831972,
++	.hdisplay = 2944,
++	.hsync_start = 2944 + 2 * 139,
++	.hsync_end = 2944 + 2 * (139 + 16),
++	.htotal = 2 * (1472 + 139 + 16 + 64),
++	.vdisplay = 1840,
++	.vsync_start = 1840 + 26,
++	.vsync_end = 1840 + 26 + 2,
++	.vtotal = 1840 + 26 + 2 + 182,
++	.type = DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED,
++};
++
++static int nt36532_command(struct nt36532_panel *p, const struct nt36532_cmd *cmd)
++{
++	int i, ret;
++
++	for (i = 0; i < ARRAY_SIZE(p->dsi); i++) {
++		struct mipi_dsi_msg msg = {
++			.channel = p->dsi[i]->channel,
++			.type = cmd->type,
++			.flags = MIPI_DSI_MSG_USE_LPM,
++			.tx_len = cmd->len,
++			.tx_buf = cmd->data,
++		};
++		ret = p->dsi[i]->host->ops->transfer(p->dsi[i]->host, &msg);
++		if (ret < 0)
++			return ret;
++		if (ret != cmd->len)
++			return -EIO;
++	}
++	if (cmd->delay_ms)
++		msleep(cmd->delay_ms);
++	return 0;
++}
++
++static int nt36532_pps(struct nt36532_panel *p)
++{
++	struct drm_dsc_config link = p->dsc;
++	struct drm_dsc_picture_parameter_set pps;
++	int i, ret;
++
++	/* DPU uses the full frame; the panel decoder on each link sees half. */
++	link.pic_width /= 2;
++	drm_dsc_pps_payload_pack(&pps, &link);
++	for (i = 0; i < ARRAY_SIZE(p->dsi); i++) {
++		ret = mipi_dsi_picture_parameter_set(p->dsi[i], &pps);
++		if (ret < 0)
++			return ret;
++		ret = mipi_dsi_compression_mode(p->dsi[i], true);
++		if (ret < 0)
++			return ret;
++	}
++	return 0;
++}
++
++static int nt36532_prepare(struct drm_panel *panel)
++{
++	struct nt36532_panel *p = to_nt36532(panel);
++	size_t n;
++	int ret;
++
++	ret = regulator_bulk_enable(ARRAY_SIZE(p->supplies), p->supplies);
++	if (ret)
++		return ret;
++	msleep(10);
++	ret = regulator_enable(p->enp);
++	if (ret)
++		goto supplies_off;
++	ret = regulator_enable(p->enn);
++	if (ret)
++		goto enp_off;
++	msleep(10);
++	/* Active-low descriptor: logical 1 is the stock physical low. */
++	gpiod_set_value_cansleep(p->reset, 1);
++	msleep(11);
++	gpiod_set_value_cansleep(p->reset, 0);
++	usleep_range(1000, 1500);
++	gpiod_set_value_cansleep(p->reset, 1);
++	usleep_range(3000, 3500);
++	gpiod_set_value_cansleep(p->reset, 0);
++	msleep(10);
++
++	for (n = 0; n < p->desc->on_count; n++) {
++		const struct nt36532_cmd *cmd = &p->desc->on[n];
++
++		/* Send the decoder PPS immediately before stock sleep-out. */
++		if (cmd->type == MIPI_DSI_DCS_SHORT_WRITE && cmd->data[0] == MIPI_DCS_EXIT_SLEEP_MODE) {
++			ret = nt36532_pps(p);
++			if (ret)
++				goto bias_off;
++		}
++		ret = nt36532_command(p, cmd);
++		if (ret)
++			goto bias_off;
++	}
++	return 0;
++
++bias_off:
++	gpiod_set_value_cansleep(p->reset, 1);
++	regulator_disable(p->enn);
++	msleep(5);
++enp_off:
++	regulator_disable(p->enp);
++	msleep(5);
++supplies_off:
++	regulator_bulk_disable(ARRAY_SIZE(p->supplies), p->supplies);
++	return ret;
++}
++
++static int nt36532_unprepare(struct drm_panel *panel)
++{
++	struct nt36532_panel *p = to_nt36532(panel);
++	int ret, first = 0;
++	size_t n;
++
++	/* Complete power-down even when a DSI command fails. */
++	for (n = 0; n < p->desc->off_count; n++) {
++		ret = nt36532_command(p, &p->desc->off[n]);
++		if (ret && !first)
++			first = ret;
++	}
++	gpiod_set_value_cansleep(p->reset, 1);
++	ret = regulator_disable(p->enn);
++	if (ret && !first)
++		first = ret;
++	msleep(5);
++	ret = regulator_disable(p->enp);
++	if (ret && !first)
++		first = ret;
++	msleep(5);
++	ret = regulator_bulk_disable(ARRAY_SIZE(p->supplies), p->supplies);
++	if (ret && !first)
++		first = ret;
++	return first;
++}
++
++static int nt36532_get_modes(struct drm_panel *panel, struct drm_connector *connector)
++{
++	struct drm_display_mode *mode = drm_mode_duplicate(connector->dev, &nt36532_mode);
++
++	if (!mode)
++		return -ENOMEM;
++	drm_mode_set_name(mode);
++	drm_mode_probed_add(connector, mode);
++	connector->display_info.width_mm = 274;
++	connector->display_info.height_mm = 171;
++	connector->display_info.bpc = 10;
++	return 1;
++}
++
++static enum drm_panel_orientation nt36532_get_orientation(struct drm_panel *panel)
++{
++	return to_nt36532(panel)->orientation;
++}
++static const struct drm_panel_funcs nt36532_funcs = {
++	.prepare = nt36532_prepare,
++	.unprepare = nt36532_unprepare,
++	.get_modes = nt36532_get_modes,
++	.get_orientation = nt36532_get_orientation,
++};
++
++static int nt36532_probe(struct mipi_dsi_device *dsi)
++{
++	struct device *dev = &dsi->dev;
++	struct nt36532_panel *p;
++	struct mipi_dsi_host *host;
++	struct device_node *node;
++	const struct mipi_dsi_device_info info = { .type = "nt36532-secondary", .channel = 0 };
++	int i, ret;
++
++	p = devm_drm_panel_alloc(dev, struct nt36532_panel, panel, &nt36532_funcs,
++				 DRM_MODE_CONNECTOR_DSI);
++	if (IS_ERR(p))
++		return PTR_ERR(p);
++	p->desc = of_device_get_match_data(dev);
++	p->supplies[0].supply = "vdd";
++	p->supplies[1].supply = "vddio";
++	p->supplies[2].supply = "avdd";
++	ret = devm_regulator_bulk_get(dev, ARRAY_SIZE(p->supplies), p->supplies);
++	if (ret)
++		return dev_err_probe(dev, ret, "panel supplies\n");
++	p->enp = devm_regulator_get(dev, "enp");
++	if (IS_ERR(p->enp))
++		return dev_err_probe(dev, PTR_ERR(p->enp), "positive bias\n");
++	p->enn = devm_regulator_get(dev, "enn");
++	if (IS_ERR(p->enn))
++		return dev_err_probe(dev, PTR_ERR(p->enn), "negative bias\n");
++	p->reset = devm_gpiod_get(dev, "reset", GPIOD_OUT_HIGH);
++	if (IS_ERR(p->reset))
++		return dev_err_probe(dev, PTR_ERR(p->reset), "panel reset\n");
++	ret = of_drm_get_panel_orientation(dev->of_node, &p->orientation);
++	if (ret)
++		return ret;
++	ret = drm_panel_of_backlight(&p->panel);
++	if (ret)
++		return dev_err_probe(dev, ret, "dual backlight\n");
++
++	node = of_graph_get_remote_node(dev->of_node, 1, -1);
++	if (!node)
++		return -ENODEV;
++	host = of_find_mipi_dsi_host_by_node(node);
++	of_node_put(node);
++	if (!host)
++		return -EPROBE_DEFER;
++	p->dsi[0] = dsi;
++	p->dsi[1] = devm_mipi_dsi_device_register_full(dev, host, &info);
++	if (IS_ERR(p->dsi[1]))
++		return PTR_ERR(p->dsi[1]);
++	p->dsc.dsc_version_major = 1;
++	p->dsc.dsc_version_minor = 1;
++	p->dsc.bits_per_component = 10;
++	p->dsc.bits_per_pixel = 8 << 4;
++	p->dsc.pic_width = 2944;
++	p->dsc.pic_height = 1840;
++	p->dsc.slice_width = 736;
++	p->dsc.slice_height = 20;
++	/* msm uses slice_count per interface for a bonded display. */
++	p->dsc.slice_count = 2;
++	p->dsc.block_pred_enable = true;
++	p->dsc.convert_rgb = true;
++	p->dsc.line_buf_depth = 11;
++	drm_dsc_set_const_params(&p->dsc);
++	drm_dsc_set_rc_buf_thresh(&p->dsc);
++	ret = drm_dsc_setup_rc_params(&p->dsc, DRM_DSC_1_2_444);
++	if (ret)
++		return ret;
++	p->dsc.initial_scale_value = drm_dsc_initial_scale_value(&p->dsc);
++	ret = drm_dsc_compute_rc_parameters(&p->dsc);
++	if (ret)
++		return ret;
++	p->panel.prepare_prev_first = true;
++	mipi_dsi_set_drvdata(dsi, p);
++	for (i = 0; i < ARRAY_SIZE(p->dsi); i++) {
++		p->dsi[i]->lanes = 4;
++		p->dsi[i]->format = MIPI_DSI_FMT_RGB101010;
++		p->dsi[i]->mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST |
++					MIPI_DSI_MODE_LPM;
++		p->dsi[i]->dsc = &p->dsc;
++		ret = devm_mipi_dsi_attach(dev, p->dsi[i]);
++		if (ret)
++			return ret;
++	}
++	drm_panel_add(&p->panel);
++	return 0;
++}
++static void nt36532_remove(struct mipi_dsi_device *dsi)
++{
++	struct nt36532_panel *p = mipi_dsi_get_drvdata(dsi);
++
++	drm_panel_disable(&p->panel);
++	drm_panel_unprepare(&p->panel);
++	drm_panel_remove(&p->panel);
++}
++static void nt36532_shutdown(struct mipi_dsi_device *dsi)
++{
++	struct nt36532_panel *p = mipi_dsi_get_drvdata(dsi);
++
++	drm_panel_disable(&p->panel);
++	drm_panel_unprepare(&p->panel);
++}
++static const struct of_device_id nt36532_match[] = {
++	{ .compatible = "lenovo,tb520fu-tianma-nt36532", .data = &tianma_desc },
++	{ .compatible = "lenovo,tb520fu-boe-nt36532", .data = &boe_desc },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, nt36532_match);
++static struct mipi_dsi_driver nt36532_driver = {
++	.probe = nt36532_probe,
++	.remove = nt36532_remove,
++	.shutdown = nt36532_shutdown,
++	.driver = { .name = "panel-novatek-nt36532", .of_match_table = nt36532_match },
++};
++module_mipi_dsi_driver(nt36532_driver);
++MODULE_DESCRIPTION("Lenovo TB520FU NT36532 dual D-PHY panel");
++MODULE_LICENSE("GPL");
