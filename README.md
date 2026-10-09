@@ -1,3 +1,50 @@
+# Linux TB520FU — WSL port workspace
+
+This branch is the TB520FU development fork of
+[enij90/armada-tb321fu](https://github.com/enij90/armada-tb321fu).
+The port is being prepared; the inherited TB321FU hardware support and installation
+instructions below do **not** establish TB520FU compatibility.
+
+## Fork-only development
+
+- Repository: [wnduddld0513/linux-tb520fu](https://github.com/wnduddld0513/linux-tb520fu)
+- Development branch: `tb520fu`. Keep `main` as the original baseline.
+- WSL checkout: `/home/wnduddld0513/linux-tb520fu`.
+
+For a fresh WSL checkout:
+
+```bash
+git clone --branch tb520fu https://github.com/wnduddld0513/linux-tb520fu.git
+cd linux-tb520fu
+bash tools/setup-fork.sh
+```
+
+The setup script pins the fetch/push URL and default push refspec to this fork's
+`tb520fu` branch. The installed `pre-push` hook rejects other repositories,
+branches, tags and branch deletion, including pushes using an explicit URL.
+These settings apply to this checkout; run setup again in every new clone.
+Git hooks can be deliberately bypassed, so they protect against accidental pushes.
+
+```bash
+git add <changed-files>
+git commit -m "Describe the TB520FU change"
+git push
+```
+
+For PRs, always select this fork explicitly:
+
+```bash
+gh pr create --repo wnduddld0513/linux-tb520fu --base tb520fu
+```
+
+The manual upstream sync workflow reads `enij90/armada-tb321fu:main` and creates
+its review PR **inside this fork**, targeting `tb520fu`. It never submits a PR to
+the original repository. Inherited release and PR artifact workflows also select
+the current repository explicitly. TB321FU release tooling remains reference code
+until the TB520FU hardware port and image generation have been adapted.
+
+## Original TB321FU reference
+
 # Armada on the Lenovo Legion Tab Gen 3 (TB321FU) — experimental
 
 This is an **unofficial, experimental** port of [Armada](https://github.com/armada-os/armada)

@@ -62,10 +62,10 @@ jobs:
           version=$(cat out/VERSION)
           tag="${{ inputs.tag }}"
           [ -n "$tag" ] || tag="v${version}"
-          gh release create "$tag" --draft --prerelease --target "${GITHUB_SHA}" \
+          gh release create "$tag" --repo "${GITHUB_REPOSITORY}" --draft --prerelease --target "${GITHUB_SHA}" \
             --title "Armada TB321FU — ${tag}" \
             --notes "Images built from \`${{ inputs.image }}\` (${version}). Edit these notes, then publish."
-          gh release upload "$tag" out/boot.img out/super.img out/userdata.simg.part* out/SHA256SUMS
+          gh release upload "$tag" --repo "${GITHUB_REPOSITORY}" out/boot.img out/super.img out/userdata.simg.part* out/SHA256SUMS
           {
             echo "### Draft release ${tag}"
             echo

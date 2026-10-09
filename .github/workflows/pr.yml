@@ -242,7 +242,7 @@ jobs:
           # there is no pinned download-artifact to reuse.
           dir="${RUNNER_TEMP}/imported"
           mkdir -p "${dir}"
-          gh run download "${GITHUB_RUN_ID}" --pattern 'pkg-*' --dir "${dir}"
+          gh run download "${GITHUB_RUN_ID}" --repo "${GITHUB_REPOSITORY}" --pattern 'pkg-*' --dir "${dir}"
           while read -r pkg hash; do
             # gh lays artifacts out differently for one vs many, so find the tar.
             tar="$(find "${dir}" -name "${pkg}.tar" -print -quit)"
