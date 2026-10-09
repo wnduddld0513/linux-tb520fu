@@ -1,0 +1,213 @@
+From: TB520FU fork maintainers
+Subject: [PATCH] misc: add TB520FU Goodix GPIO power and IRQ control
+
+Port the stock reset/VDD sequencing with descriptor GPIOs and managed resources.
+Keep power off until requested. Secure biometric transport remains a separate port.
+
+diff --git a/drivers/misc/tb520fu-goodix.c b/drivers/misc/tb520fu-goodix.c
+--- /dev/null
++++ b/drivers/misc/tb520fu-goodix.c
+@@ -0,0 +1,178 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/* Goodix GPIO/power transport for Lenovo TB520FU.
++ * Reset and regulator timing adapted from Goodix (C) 2016, Lenovo 6.1.68
++ * drivers/input/fingerprint/goodix/platform.c.
++ * The secure-world image/authentication protocol is deliberately not emulated.
++ */
++#include <linux/delay.h>
++#include <linux/gpio/consumer.h>
++#include <linux/interrupt.h>
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++#include <linux/regulator/consumer.h>
++
++struct yoga_fp {
++	struct device *dev;
++	struct regulator *vdd;
++	struct gpio_desc *reset, *irq_gpio;
++	struct mutex lock;
++	atomic_t irq_count;
++	bool powered;
++};
++static int yoga_fp_power(struct yoga_fp *fp, bool on)
++{
++	int ret;
++
++	if (fp->powered == on)
++		return 0;
++	if (on) {
++		ret = regulator_enable(fp->vdd);
++		if (ret)
++			return ret;
++		msleep(15);
++		gpiod_set_value_cansleep(fp->reset, 0);
++		WRITE_ONCE(fp->powered, true);
++	} else {
++		gpiod_set_value_cansleep(fp->reset, 1);
++		usleep_range(1000, 2000);
++		ret = regulator_disable(fp->vdd);
++		if (ret)
++			return ret;
++		WRITE_ONCE(fp->powered, false);
++	}
++	return 0;
++}
++static ssize_t powered_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct yoga_fp *fp = dev_get_drvdata(dev);
++
++	return sysfs_emit(buf, "%u\n", READ_ONCE(fp->powered));
++}
++static ssize_t powered_store(struct device *dev, struct device_attribute *attr,
++			     const char *buf, size_t count)
++{
++	struct yoga_fp *fp = dev_get_drvdata(dev);
++	bool on;
++	int ret;
++
++	ret = kstrtobool(buf, &on);
++	if (ret)
++		return ret;
++	mutex_lock(&fp->lock);
++	ret = yoga_fp_power(fp, on);
++	mutex_unlock(&fp->lock);
++	return ret ? ret : count;
++}
++static DEVICE_ATTR_RW(powered);
++static ssize_t reset_store(struct device *dev, struct device_attribute *attr,
++			   const char *buf, size_t count)
++{
++	struct yoga_fp *fp = dev_get_drvdata(dev);
++	bool reset;
++	int ret = kstrtobool(buf, &reset);
++
++	if (ret)
++		return ret;
++	if (!reset)
++		return -EINVAL;
++	mutex_lock(&fp->lock);
++	if (!fp->powered) {
++		ret = -EHOSTDOWN;
++	} else {
++		gpiod_set_value_cansleep(fp->reset, 1);
++		usleep_range(3000, 4000);
++		gpiod_set_value_cansleep(fp->reset, 0);
++		msleep(10);
++	}
++	mutex_unlock(&fp->lock);
++	return ret ? ret : count;
++}
++static DEVICE_ATTR_WO(reset);
++static ssize_t irq_count_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct yoga_fp *fp = dev_get_drvdata(dev);
++
++	return sysfs_emit(buf, "%u\n", (unsigned int)atomic_read(&fp->irq_count));
++}
++static DEVICE_ATTR_RO(irq_count);
++static struct attribute *yoga_fp_attrs[] = {
++	&dev_attr_powered.attr, &dev_attr_reset.attr, &dev_attr_irq_count.attr, NULL
++};
++ATTRIBUTE_GROUPS(yoga_fp);
++static irqreturn_t yoga_fp_irq(int irq, void *data)
++{
++	struct yoga_fp *fp = data;
++
++	if (READ_ONCE(fp->powered)) {
++		atomic_inc(&fp->irq_count);
++		sysfs_notify(&fp->dev->kobj, NULL, "irq_count");
++	}
++	return IRQ_HANDLED;
++}
++static void yoga_fp_off(void *data)
++{
++	struct yoga_fp *fp = data;
++
++	mutex_lock(&fp->lock);
++	yoga_fp_power(fp, false);
++	mutex_unlock(&fp->lock);
++}
++static int yoga_fp_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct yoga_fp *fp;
++	int irq, ret;
++
++	fp = devm_kzalloc(dev, sizeof(*fp), GFP_KERNEL);
++	if (!fp)
++		return -ENOMEM;
++	fp->dev = dev;
++	mutex_init(&fp->lock);
++	atomic_set(&fp->irq_count, 0);
++	platform_set_drvdata(pdev, fp);
++	fp->vdd = devm_regulator_get(dev, "vdd");
++	if (IS_ERR(fp->vdd))
++		return dev_err_probe(dev, PTR_ERR(fp->vdd), "VDD supply\n");
++	fp->reset = devm_gpiod_get(dev, "reset", GPIOD_OUT_HIGH);
++	if (IS_ERR(fp->reset))
++		return dev_err_probe(dev, PTR_ERR(fp->reset), "reset GPIO\n");
++	fp->irq_gpio = devm_gpiod_get(dev, "irq", GPIOD_IN);
++	if (IS_ERR(fp->irq_gpio))
++		return dev_err_probe(dev, PTR_ERR(fp->irq_gpio), "IRQ GPIO\n");
++	irq = gpiod_to_irq(fp->irq_gpio);
++	if (irq < 0)
++		return irq;
++	ret = devm_add_action_or_reset(dev, yoga_fp_off, fp);
++	if (ret)
++		return ret;
++	ret = devm_request_threaded_irq(dev, irq, NULL, yoga_fp_irq,
++		IRQF_ONESHOT | IRQF_TRIGGER_RISING, dev_name(dev), fp);
++	if (ret)
++		return ret;
++	/* Publishing attributes last prevents writes after IRQ/resources are freed. */
++	return devm_device_add_groups(dev, yoga_fp_groups);
++}
++static int yoga_fp_suspend(struct device *dev)
++{
++	/* Authentication/wake integration requires the secure-world userspace port. */
++	yoga_fp_off(dev_get_drvdata(dev));
++	return 0;
++}
++static DEFINE_SIMPLE_DEV_PM_OPS(yoga_fp_pm, yoga_fp_suspend, NULL);
++static const struct of_device_id yoga_fp_match[] = {
++	{ .compatible = "lenovo,tb520fu-goodix-control" }, {}
++};
++MODULE_DEVICE_TABLE(of, yoga_fp_match);
++static struct platform_driver yoga_fp_driver = {
++	.probe = yoga_fp_probe,
++	.driver = {
++		.name = "tb520fu-goodix-control",
++		.of_match_table = yoga_fp_match,
++		.pm = pm_sleep_ptr(&yoga_fp_pm),
++	},
++};
++module_platform_driver(yoga_fp_driver);
++MODULE_DESCRIPTION("TB520FU Goodix power/reset/IRQ control, no biometric protocol");
++MODULE_LICENSE("GPL");
+diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+--- a/drivers/misc/Kconfig
++++ b/drivers/misc/Kconfig
+@@ -4,6 +4,13 @@
+ #
+ 
+ menu "Misc devices"
++
++config TB520FU_GOODIX_CONTROL
++	tristate "TB520FU Goodix GPIO/power control only"
++	depends on OF && GPIOLIB && REGULATOR
++	help
++	  Power, reset and IRQ notifications for the tablet's Goodix TEE sensor.
++	  This does not provide fingerprint images or Linux authentication.
+ 
+ config SENSORS_LIS3LV02D
+ 	tristate
+diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
+--- a/drivers/misc/Makefile
++++ b/drivers/misc/Makefile
+@@ -74,3 +74,4 @@
+ obj-y				+= keba/
+ obj-y				+= amd-sbi/
+ obj-$(CONFIG_MISC_RP1)		+= rp1/
++obj-$(CONFIG_TB520FU_GOODIX_CONTROL) += tb520fu-goodix.o

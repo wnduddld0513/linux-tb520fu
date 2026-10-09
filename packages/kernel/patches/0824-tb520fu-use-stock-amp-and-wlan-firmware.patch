@@ -1,0 +1,110 @@
+From: TB520FU fork maintainers
+Subject: [PATCH] ASoC/ath12k: select TB520FU stock calibration and scope Y700 quirks
+
+diff --git a/sound/soc/codecs/aw882xx/aw882xx.c b/sound/soc/codecs/aw882xx/aw882xx.c
+--- a/sound/soc/codecs/aw882xx/aw882xx.c
++++ b/sound/soc/codecs/aw882xx/aw882xx.c
+@@ -1054,11 +1054,13 @@
+ 			container_of(work, struct aw882xx, fw_work.work);
+ 	const struct firmware *cont = NULL;
+ 	struct aw_container *aw_cfg = NULL;
+-
++	const char *firmware_name = ACF_BIN_NAME;
++
++	of_property_read_string(aw882xx->dev->of_node, "firmware-name", &firmware_name);
+ 	aw882xx->fw_status = AW_DEV_FW_FAILED;
+-	ret = request_firmware(&cont, ACF_BIN_NAME, aw882xx->dev);
++	ret = request_firmware(&cont, firmware_name, aw882xx->dev);
+ 	if ((ret) || (!cont)) {
+-		aw_dev_info(aw882xx->dev, "load [%s] failed!", ACF_BIN_NAME);
++		aw_dev_info(aw882xx->dev, "load [%s] failed!", firmware_name);
+ 		if (aw882xx->fw_retry_cnt == AW_READ_CHIPID_RETRIES) {
+ 			aw882xx->fw_retry_cnt = 0;
+ 		} else {
+@@ -1066,14 +1068,14 @@
+ 			/* sleep 1s */
+ 			msleep(1000);
+ 			aw_dev_info(aw882xx->dev, "load [%s] try [%d]!",
+-						ACF_BIN_NAME, aw882xx->fw_retry_cnt);
++						firmware_name, aw882xx->fw_retry_cnt);
+ 			aw882xx_request_firmware(work);
+ 		}
+ 		return;
+ 	}
+ 
+ 	aw_dev_info(aw882xx->dev, "load [%s] , file size: [%zu]",
+-			ACF_BIN_NAME, cont ? cont->size : 0);
++			firmware_name, cont ? cont->size : 0);
+ 
+ 	mutex_lock(&g_aw882xx_lock);
+ 	if (g_awinic_cfg == NULL) {
+@@ -1089,7 +1091,7 @@
+ 		release_firmware(cont);
+ 		ret = aw882xx_dev_parse_check_acf(aw_cfg);
+ 		if (ret) {
+-			aw_dev_err(aw882xx->dev, "Load [%s] failed ....!", ACF_BIN_NAME);
++			aw_dev_err(aw882xx->dev, "Load [%s] failed ....!", firmware_name);
+ 			vfree(aw_cfg);
+ 			aw_cfg = NULL;
+ 			mutex_unlock(&g_aw882xx_lock);
+@@ -1099,7 +1101,7 @@
+ 	} else {
+ 		aw_cfg = g_awinic_cfg;
+ 		release_firmware(cont);
+-		aw_dev_info(aw882xx->dev, "[%s] already loaded...", ACF_BIN_NAME);
++		aw_dev_info(aw882xx->dev, "[%s] already loaded...", firmware_name);
+ 	}
+ 	mutex_unlock(&g_aw882xx_lock);
+ 
+@@ -1115,6 +1117,7 @@
+ 	/*create kcontrol by profile*/
+ 	aw882xx_dynamic_create_controls(aw882xx);
+ 
++	of_property_read_string(aw882xx->dev->of_node, "firmware-name", &firmware_name);
+ 	aw882xx->fw_status = AW_DEV_FW_OK;
+ 	aw882xx->fw_retry_cnt = 0;
+ 
+diff --git a/drivers/net/wireless/ath/ath12k/core.c b/drivers/net/wireless/ath/ath12k/core.c
+--- a/drivers/net/wireless/ath/ath12k/core.c
++++ b/drivers/net/wireless/ath/ath12k/core.c
+@@ -10,6 +10,7 @@
+ #include <linux/remoteproc.h>
+ #include <linux/firmware.h>
+ #include <linux/of.h>
++#include <linux/property.h>
+ #include <linux/of_graph.h>
+ #include "ahb.h"
+ #include "core.h"
+@@ -523,8 +524,21 @@
+ {
+ 	char boardname[BOARD_NAME_SIZE], fallback_boardname[BOARD_NAME_SIZE];
+ 	char *filename, filepath[100];
++	const char *board_firmware;
+ 	int bd_api;
+ 	int ret;
++
++	/* OEM tablet BDFs can be signed ELF files, without a board-2.bin key.
++	 * An explicit board file must never fall back to another tablet's RF data.
++	 */
++	if (!device_property_read_string(ab->dev, "qcom,board-firmware", &board_firmware)) {
++		ret = request_firmware(&bd->fw, board_firmware, ab->dev);
++		if (ret)
++			return ret;
++		bd->data = bd->fw->data;
++		bd->len = bd->fw->size;
++		return 0;
++	}
+ 
+ 	filename = ATH12K_BOARD_API2_FILE;
+ 
+diff --git a/sound/soc/qcom/qdsp6/audioreach.c b/sound/soc/qcom/qdsp6/audioreach.c
+--- a/sound/soc/qcom/qdsp6/audioreach.c
++++ b/sound/soc/qcom/qdsp6/audioreach.c
+@@ -1048,6 +1048,7 @@
+ 	u32 y700_ws_src = module->ws_src;
+ 	u32 y700_intf_ws_src = y700_ws_src;
+ 	bool y700_graph40_i2s_sink =
++		of_machine_is_compatible("lenovo,tb321fu") &&
+ 		graph->id == 40 && module->module_id == MODULE_ID_I2S_SINK;
+ 	int rc;
+ 

@@ -15,6 +15,7 @@ dnf5 -y install --setopt=install_weak_deps=False \
     alsa-lib \
     alsa-ucm \
     alsa-utils \
+    m4 \
     qcom-firmware \
     atheros-firmware \
     NetworkManager \

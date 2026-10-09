@@ -19,7 +19,37 @@
     "kernel-6.1.68/drivers/input/touchscreen/NT36XXX_SPI/nt36xxx_fw_update.c": {
       "size": 24714,
       "sha256": "93712cad4772ba914e119a39fc0625f3b724d6319061e1d3ee4ca3cd1901e22b"
+    },
+    "kernel-6.1.68/drivers/tty/serial/lenovo_keyboard/owb_ppp.c": {
+      "size": 7306,
+      "sha256": "10ff7ea7ba19ef984a2c535a9f8c8b0a0932b29498b8798bb080f88de36af636"
+    },
+    "kernel-6.1.68/drivers/tty/serial/lenovo_keyboard/keyboard.c": {
+      "size": 7529,
+      "sha256": "91fcda7f5583d2682734fda4e18d038291db4a4a0133b0a44bb03a6566b45ca6"
+    },
+    "kernel-6.1.68/drivers/tty/serial/lenovo_keyboard/touchpad.c": {
+      "size": 2904,
+      "sha256": "e5c8dacff87837a0ed4ea696d4ac3bc4ad86be32cc383c0a1cd7423292fb4776"
+    },
+    "kernel-6.1.68/drivers/input/misc/qcom-hv-haptics.c": {
+      "size": 139940,
+      "sha256": "50940495dcf28d0d51b929eba7f6d505a95c5ef56773f2d9e26fa1b6551cc7c9"
+    },
+    "kernel-6.1.68/drivers/input/fingerprint/goodix/platform.c": {
+      "size": 3946,
+      "sha256": "c67042e49286b89ad884031276c8e8d49e98749a86c68c2be9c80288968a07b6"
+    },
+    "vendor/lib64/liblenovo_keyboard.so": {
+      "size": 23624,
+      "sha256": "719f6ae7d5aa67f9f053b33166a143be387d51f7a8921213a9a364510f46db4e",
+      "observation": "uart_init+0x68 and uart_open+0xc4 pass baud=0xe1000 (921600), bits=8, parity=N, stop=1 to set_opt; binary disassembly only, no execution"
     }
   },
-  "mainline_base": "https://github.com/gregkh/linux/tree/v7.2.6"
+  "mainline_base": "https://github.com/gregkh/linux/tree/v7.2.6",
+  "audio_topology": {
+    "upstream": "https://git.codelinaro.org/linaro/qcomlt/audioreach-topology",
+    "commit": "1d4c4e337df6bad4d52c4f7b3e15fff3f485be62",
+    "status": "source only; no m4/alsatplg run"
+  }
 }

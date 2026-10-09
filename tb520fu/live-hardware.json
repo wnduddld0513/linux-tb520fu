@@ -1,0 +1,72 @@
+{
+  "date": "2026-10-09",
+  "method": "Read-only ADB on the attached stock-vendor TB520FU. No flashing, service restart, root escalation or hardware writes.",
+  "identity": {
+    "model": "TB520FU",
+    "vendor_build": "ZUI_17.5.10.362_260719_ROW"
+  },
+  "i2c_driver_bindings": {
+    "0-0028": "qcom,sn-nci",
+    "1-000e": "wcd-usbss-i2c-driver",
+    "2-0011": "bl_ic_common",
+    "2-002f": "qcom,ic_wl2868c",
+    "2-0030": "ssusb_redriver",
+    "2-0034": "aw882xx_smartpa",
+    "2-0035": "aw882xx_smartpa",
+    "2-0036": "aw882xx_smartpa",
+    "3-0011": "bl_ic_common",
+    "3-0034": "aw882xx_smartpa",
+    "3-0035": "aw882xx_smartpa",
+    "3-0036": "aw882xx_smartpa",
+    "5-0034": "i2c_pmic",
+    "5-0035": "i2c_pmic",
+    "5-003b": "i2c_pmic"
+  },
+  "spi_driver_bindings": {
+    "spi0.0": "NVT-ts"
+  },
+  "platform_driver_bindings": {
+    "soc:goodix_fp": "goodix_fp",
+    "pm8550b@7:qcom,hv-haptics@f000": "qcom-hv-haptics",
+    "soc:hall_detect@0": "hall_detect"
+  },
+  "input_names": [
+    "NVTCapacitivePen",
+    "NVTCapacitiveTouchScreen",
+    "qcom-hv-haptics",
+    "hall_irq",
+    "pmic_pwrkey",
+    "pmic_resin",
+    "gpio-keys",
+    "Lenovo Tab Pen Pro Mouse",
+    "Lenovo Tab Pen Pro Consumer Control"
+  ],
+  "sensors": [
+    "lsm6dso",
+    "tcs3408",
+    "ads610x0",
+    "bu52053nvx",
+    "aw963xx0"
+  ],
+  "display": {
+    "width": 2944,
+    "height": 1840,
+    "stock_refresh_hz": [
+      30,
+      60,
+      90,
+      120,
+      144
+    ]
+  },
+  "camera": {
+    "count": 3,
+    "sensor_identity": "not readable: /sys/kernel/camera/subparts_info denied by stock SELinux"
+  },
+  "nfc": "driver bound and /dev/nq-nci present; Android nfc service absent in the currently running system",
+  "not_bound": [
+    "AW86937 at I2C 0x5a/0x5b",
+    "FSA4480 at I2C 0x43"
+  ],
+  "privacy": "Serial numbers, camera module serials, biometric enrollment, account/app logs and persist calibration are not recorded."
+}

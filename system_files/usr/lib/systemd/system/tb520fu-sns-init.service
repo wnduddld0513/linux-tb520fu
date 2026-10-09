@@ -1,0 +1,13 @@
+[Unit]
+Description=Lenovo TB520FU: sensor core (hexagonrpcd for the ADSP sensor PD)
+ConditionFirmware=device-tree-compatible(lenovo,tb520fu)
+After=local-fs.target
+Before=iio-sensor-proxy.service tb520fu-imu-bridge.service
+
+[Service]
+ExecStart=/usr/libexec/tb520fu/sns-init
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

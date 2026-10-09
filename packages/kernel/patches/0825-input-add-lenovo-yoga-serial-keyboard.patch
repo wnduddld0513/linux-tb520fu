@@ -1,0 +1,393 @@
+From: TB520FU fork maintainers
+Subject: [PATCH] Input: add Lenovo Yoga Tab Plus serdev keyboard and touchpad
+
+diff --git a/drivers/input/keyboard/Kconfig b/drivers/input/keyboard/Kconfig
+--- a/drivers/input/keyboard/Kconfig
++++ b/drivers/input/keyboard/Kconfig
+@@ -47,6 +47,13 @@
+ 
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called adp5585-keys.
++
++config KEYBOARD_LENOVO_YOGA_SERDEV
++	tristate "Lenovo Yoga Tab Plus serial pogo keyboard"
++	depends on SERIAL_DEV_BUS && GPIOLIB && OF
++	help
++	  Bounded stock PPP framing, keyboard, consumer keys and four-touch trackpad.
++	  No Android HAL, private netlink protocol or kernel file I/O is required.
+ 
+ config KEYBOARD_ADP5588
+ 	tristate "ADP5588/87 I2C QWERTY Keypad and IO Expander"
+diff --git a/drivers/input/keyboard/Makefile b/drivers/input/keyboard/Makefile
+--- a/drivers/input/keyboard/Makefile
++++ b/drivers/input/keyboard/Makefile
+@@ -71,3 +71,4 @@
+ obj-$(CONFIG_KEYBOARD_TM2_TOUCHKEY)	+= tm2-touchkey.o
+ obj-$(CONFIG_KEYBOARD_TWL4030)		+= twl4030_keypad.o
+ obj-$(CONFIG_KEYBOARD_XTKBD)		+= xtkbd.o
++obj-$(CONFIG_KEYBOARD_LENOVO_YOGA_SERDEV) += lenovo-yoga-serdev.o
+diff --git a/drivers/input/keyboard/lenovo-yoga-serdev.c b/drivers/input/keyboard/lenovo-yoga-serdev.c
+--- /dev/null
++++ b/drivers/input/keyboard/lenovo-yoga-serdev.c
+@@ -0,0 +1,361 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/* Lenovo Yoga Tab Plus pogo keyboard protocol, adapted from Lenovo 6.1.68
++ * drivers/tty/serial/lenovo_keyboard/{owb_ppp,keyboard,touchpad}.c.
++ * Use serdev and per-device state instead of the Android HAL's kernel tty file.
++ */
++#include <linux/delay.h>
++#include <linux/gpio/consumer.h>
++#include <linux/input/mt.h>
++#include <linux/interrupt.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/pm_wakeup.h>
++#include <linux/serdev.h>
++#include <linux/spinlock.h>
++#include <linux/unaligned.h>
++#include <linux/workqueue.h>
++
++#define FRAME_MAX 512
++struct yoga_kb {
++	struct serdev_device *serdev;
++	struct input_dev *keys, *pad;
++	struct gpio_desc *power, *plug;
++	struct delayed_work power_work;
++	spinlock_t lock;
++	u8 frame[FRAME_MAX], old[8];
++	u16 media[2];
++	unsigned int used, state;
++	int plug_irq, wake_irq;
++	bool opened, powered;
++};
++static const u8 scramble[64] = {
++	0xb8,0x02,0xd9,0x57,0xc6,0x48,0xc2,0x13,0xd7,0xa6,0x30,0xbf,0x40,0xd3,0x07,0xce,
++	0xc3,0xab,0xfa,0x51,0x62,0x18,0xbd,0x84,0x7d,0xca,0xe0,0xcf,0xf2,0xac,0xbc,0x12,
++	0xf5,0x14,0xd0,0x72,0xdc,0x1a,0x50,0x00,0x00,0x32,0xd1,0x7b,0x33,0xb6,0x10,0xdd,
++	0x6a,0x21,0xeb,0x7e,0x52,0x5b,0x3d,0x9f,0x85,0xcb,0x1f,0x66,0x73,0x96,0xa1,0x60,
++};
++/* USB HID usage -> Linux key code, from the stock keyboard.c. */
++static const u8 keymap[256] = {
++	0,0,0,0,30,48,46,32,18,33,34,35,23,36,37,38,
++	50,49,24,25,16,19,31,20,22,47,17,45,21,44,2,3,
++	4,5,6,7,8,9,10,11,28,1,14,15,57,12,13,26,
++	27,43,43,39,40,41,51,52,53,58,59,60,61,62,63,64,
++	65,66,67,68,87,88,99,70,119,110,102,104,111,107,109,106,
++	105,108,103,69,98,55,74,78,96,79,80,81,75,76,77,71,
++	72,73,82,83,86,127,116,117,183,184,185,186,187,188,189,190,
++	191,192,193,194,134,138,130,132,128,129,131,137,133,135,136,113,
++	115,114,0,0,0,121,0,89,93,124,92,94,95,0,0,0,
++	122,123,90,91,85,0,0,0,0,0,0,0,111,0,0,0,
++	[224] = 29,42,56,125,97,54,100,126,
++};
++static const struct { u16 usage, key; } media_map[] = {
++	{0xe2,KEY_MUTE},{0xea,KEY_VOLUMEDOWN},{0xe9,KEY_VOLUMEUP},{0x224,KEY_BACK},
++	{0x70,KEY_BRIGHTNESSDOWN},{0x6f,KEY_BRIGHTNESSUP},{0x38e,KEY_SCREENLOCK},
++	{0x390,KEY_LANGUAGE},{0x391,KEY_MICMUTE},{0x392,KEY_TOUCHPAD_TOGGLE},
++	{0x393,KEY_SEARCH},{0x394,KEY_FULL_SCREEN},{0x395,KEY_SCALE},
++	{0x397,KEY_PROG1},{0x398,KEY_PROG2},{0x399,KEY_PROG3},
++};
++static void yoga_keys(struct yoga_kb *k, const u8 *p)
++{
++	int i;
++
++	/* Ignore HID rollover reports, preserving keys until a valid report. */
++	for (i = 2; i < 8; i++)
++		if (p[i] && p[i] < 4)
++			return;
++	for (i = 0; i < 8; i++)
++		input_report_key(k->keys, keymap[224+i], !!(p[1] & BIT(i)));
++	for (i = 2; i < 8; i++) {
++		if (keymap[k->old[i]] && !memchr(p+2, k->old[i], 6))
++			input_report_key(k->keys, keymap[k->old[i]], 0);
++		if (keymap[p[i]] && !memchr(k->old+2, p[i], 6))
++			input_report_key(k->keys, keymap[p[i]], 1);
++	}
++	memcpy(k->old, p, 8);
++	input_sync(k->keys);
++}
++static void yoga_media(struct yoga_kb *k, const u8 *p)
++{
++	u16 usages[2] = {get_unaligned_le16(p), get_unaligned_le16(p+2)};
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(media_map); i++)
++		input_report_key(k->keys, media_map[i].key,
++			usages[0] == media_map[i].usage || usages[1] == media_map[i].usage);
++	memcpy(k->media, usages, sizeof(usages));
++	input_sync(k->keys);
++}
++static void yoga_pad(struct yoga_kb *k, const u8 *p, unsigned int len)
++{
++	unsigned int count, i, ids = 0;
++
++	if (len < 2 || p[0] < 1 || (p[0]-1) % 5)
++		return;
++	count = (p[0]-1)/5;
++	if (count > 4 || len != 2+5*count)
++		return;
++	/* Reject the whole frame before changing slots if any contact is invalid. */
++	for (i = 0; i < count; i++) {
++		const u8 *c = p+2+5*i;
++		unsigned int id = c[0] >> 4;
++
++		if (id >= 4 || (ids & BIT(id)) || get_unaligned_le16(c+1) > 3211 ||
++		    get_unaligned_le16(c+3) > 1879)
++			return;
++		ids |= BIT(id);
++	}
++	for (i = 0; i < count; i++) {
++		const u8 *c = p+2+5*i;
++
++		input_mt_slot(k->pad, c[0] >> 4);
++		input_mt_report_slot_state(k->pad, MT_TOOL_FINGER, c[0] & 1);
++		if (c[0] & 1) {
++			input_report_abs(k->pad, ABS_MT_POSITION_X, get_unaligned_le16(c+1));
++			input_report_abs(k->pad, ABS_MT_POSITION_Y, get_unaligned_le16(c+3));
++		}
++	}
++	input_report_key(k->pad, BTN_LEFT, p[1] & 1);
++	input_report_key(k->pad, BTN_RIGHT, !!(p[1] & 2));
++	input_mt_sync_frame(k->pad);
++	input_sync(k->pad);
++}
++static void yoga_frame(struct yoga_kb *k)
++{
++	u8 data[256], sum = 0, seed;
++	unsigned int i, n = 0, tail = k->used;
++
++	if (tail < 3)
++		return;
++	/* The checksum sums escaped wire bytes, excluding the escaped checksum. */
++	if (tail >= 2 && k->frame[tail-2] == 0x7d)
++		tail -= 2;
++	else
++		tail--;
++	for (i = 0; i < k->used;) {
++		u8 value = k->frame[i];
++
++		if (i < tail)
++			sum += value;
++		i++;
++		if (value == 0x7d) {
++			if (i >= k->used || (k->frame[i] != 0x5d && k->frame[i] != 0x5e))
++				return;
++			if (i < tail)
++				sum += k->frame[i];
++			value = k->frame[i++] ^ 0x20;
++		}
++		if (n >= sizeof(data))
++			return;
++		data[n++] = value;
++	}
++	if (n < 3 || sum != data[n-1])
++		return;
++	seed = data[0];
++	n -= 2;
++	for (i = 0; i < n; i++)
++		data[i] = data[i+1] ^ scramble[(seed+i) % ARRAY_SIZE(scramble)];
++	if (data[0] == 0x11 && n == 9)
++		yoga_keys(k, data+1);
++	else if (data[0] == 0x12 && n == 6)
++		yoga_media(k, data+2);
++	else if (data[0] == 0x13)
++		yoga_pad(k, data+1, n-1);
++}
++static size_t yoga_receive(struct serdev_device *serdev, const u8 *buf, size_t count)
++{
++	struct yoga_kb *k = serdev_device_get_drvdata(serdev);
++	unsigned long flags;
++	size_t i;
++
++	spin_lock_irqsave(&k->lock, flags);
++	for (i = 0; i < count; i++) {
++		u8 c = buf[i];
++
++		if (c == 0x7e) {
++			if (k->state == 2 && k->powered)
++				yoga_frame(k);
++			k->state = 1;
++			k->used = 0;
++		} else if (k->state == 1) {
++			k->state = c == 0xff ? 2 : 0;
++		} else if (k->state == 2) {
++			if (k->used == sizeof(k->frame)) {
++				k->state = 0;
++				k->used = 0;
++			} else {
++				k->frame[k->used++] = c;
++			}
++		}
++	}
++	spin_unlock_irqrestore(&k->lock, flags);
++	return count;
++}
++static void yoga_power_work(struct work_struct *work)
++{
++	struct yoga_kb *k = container_of(to_delayed_work(work), struct yoga_kb, power_work);
++	unsigned long flags;
++	u8 empty[8] = {0};
++	u8 empty_media[4] = {0};
++	int plugged = gpiod_get_value_cansleep(k->plug), i;
++
++	if (plugged < 0)
++		return;
++	gpiod_set_value_cansleep(k->power, plugged);
++	spin_lock_irqsave(&k->lock, flags);
++	k->powered = plugged;
++	if (!plugged) {
++		yoga_keys(k, empty);
++		yoga_media(k, empty_media);
++		for (i = 0; i < 4; i++) {
++			input_mt_slot(k->pad, i);
++			input_mt_report_slot_state(k->pad, MT_TOOL_FINGER, false);
++		}
++		input_report_key(k->pad, BTN_LEFT, 0);
++		input_report_key(k->pad, BTN_RIGHT, 0);
++		input_mt_sync_frame(k->pad);
++		input_sync(k->pad);
++		k->state = k->used = 0;
++	}
++	spin_unlock_irqrestore(&k->lock, flags);
++}
++static irqreturn_t yoga_plug_irq(int irq, void *data)
++{
++	struct yoga_kb *k = data;
++
++	mod_delayed_work(system_wq, &k->power_work, msecs_to_jiffies(20));
++	return IRQ_HANDLED;
++}
++static irqreturn_t yoga_wake_irq(int irq, void *data)
++{
++	struct yoga_kb *k = data;
++
++	pm_wakeup_event(&k->serdev->dev, 500);
++	return IRQ_HANDLED;
++}
++static void yoga_stop(void *data)
++{
++	struct yoga_kb *k = data;
++
++	disable_irq(k->plug_irq);
++	disable_irq(k->wake_irq);
++	cancel_delayed_work_sync(&k->power_work);
++	if (k->opened)
++		serdev_device_close(k->serdev);
++	gpiod_set_value_cansleep(k->power, 0);
++	device_init_wakeup(&k->serdev->dev, false);
++}
++static const struct serdev_device_ops yoga_ops = { .receive_buf = yoga_receive };
++static int yoga_probe(struct serdev_device *serdev)
++{
++	struct device *dev = &serdev->dev;
++	struct gpio_desc *wake, *tx;
++	struct yoga_kb *k;
++	int i, ret;
++
++	k = devm_kzalloc(dev, sizeof(*k), GFP_KERNEL);
++	if (!k)
++		return -ENOMEM;
++	k->serdev = serdev;
++	spin_lock_init(&k->lock);
++	INIT_DELAYED_WORK(&k->power_work, yoga_power_work);
++	serdev_device_set_drvdata(serdev, k);
++	k->power = devm_gpiod_get(dev, "power-enable", GPIOD_OUT_LOW);
++	k->plug = devm_gpiod_get(dev, "plug", GPIOD_IN);
++	wake = devm_gpiod_get(dev, "wake", GPIOD_IN);
++	/* RX-only operation leaves the stock half-duplex TX gate low. */
++	tx = devm_gpiod_get(dev, "tx-enable", GPIOD_OUT_LOW);
++	if (IS_ERR(k->power)) return dev_err_probe(dev, PTR_ERR(k->power), "power GPIO\n");
++	if (IS_ERR(k->plug)) return dev_err_probe(dev, PTR_ERR(k->plug), "plug GPIO\n");
++	if (IS_ERR(wake)) return dev_err_probe(dev, PTR_ERR(wake), "wake GPIO\n");
++	if (IS_ERR(tx)) return dev_err_probe(dev, PTR_ERR(tx), "TX GPIO\n");
++	k->keys = devm_input_allocate_device(dev);
++	k->pad = devm_input_allocate_device(dev);
++	if (!k->keys || !k->pad)
++		return -ENOMEM;
++	k->keys->name = "Lenovo Yoga Tab Plus Pogo Keyboard";
++	k->pad->name = "Lenovo Yoga Tab Plus Pogo Touchpad";
++	k->keys->id.bustype = k->pad->id.bustype = BUS_RS232;
++	k->keys->id.vendor = k->pad->id.vendor = 0x17ef;
++	k->keys->id.product = k->pad->id.product = 0x61ba;
++	__set_bit(EV_REP, k->keys->evbit);
++	for (i = 0; i < ARRAY_SIZE(keymap); i++)
++		if (keymap[i]) input_set_capability(k->keys, EV_KEY, keymap[i]);
++	for (i = 0; i < ARRAY_SIZE(media_map); i++)
++		input_set_capability(k->keys, EV_KEY, media_map[i].key);
++	input_set_capability(k->pad, EV_KEY, BTN_LEFT);
++	input_set_capability(k->pad, EV_KEY, BTN_RIGHT);
++	input_set_abs_params(k->pad, ABS_MT_POSITION_X, 0, 3211, 0, 0);
++	input_set_abs_params(k->pad, ABS_MT_POSITION_Y, 0, 1879, 0, 0);
++	__set_bit(INPUT_PROP_BUTTONPAD, k->pad->propbit);
++	ret = input_mt_init_slots(k->pad, 4, INPUT_MT_POINTER | INPUT_MT_DROP_UNUSED);
++	if (ret) return ret;
++	ret = input_register_device(k->keys);
++	if (ret) return ret;
++	ret = input_register_device(k->pad);
++	if (ret) return ret;
++	k->plug_irq = gpiod_to_irq(k->plug);
++	k->wake_irq = gpiod_to_irq(wake);
++	if (k->plug_irq < 0) return k->plug_irq;
++	if (k->wake_irq < 0) return k->wake_irq;
++	ret = devm_request_threaded_irq(dev, k->plug_irq, NULL, yoga_plug_irq,
++		IRQF_ONESHOT | IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING | IRQF_NO_AUTOEN,
++		dev_name(dev), k);
++	if (ret) return ret;
++	ret = devm_request_threaded_irq(dev, k->wake_irq, NULL, yoga_wake_irq,
++		IRQF_ONESHOT | IRQF_TRIGGER_FALLING | IRQF_NO_AUTOEN, dev_name(dev), k);
++	if (ret) return ret;
++	ret = devm_add_action_or_reset(dev, yoga_stop, k);
++	if (ret) return ret;
++	serdev_device_set_client_ops(serdev, &yoga_ops);
++	ret = serdev_device_open(serdev);
++	if (ret) return ret;
++	k->opened = true;
++	if (serdev_device_set_baudrate(serdev, 921600) != 921600)
++		return -EINVAL;
++	serdev_device_set_flow_control(serdev, false);
++	ret = serdev_device_set_parity(serdev, SERDEV_PARITY_NONE);
++	if (ret) return ret;
++	device_init_wakeup(dev, true);
++	enable_irq(k->plug_irq);
++	enable_irq(k->wake_irq);
++	mod_delayed_work(system_wq, &k->power_work, 0);
++	return 0;
++}
++static int yoga_suspend(struct device *dev)
++{
++	struct yoga_kb *k = dev_get_drvdata(dev);
++	int ret;
++
++	if (!device_may_wakeup(dev))
++		return 0;
++	ret = enable_irq_wake(k->plug_irq);
++	if (ret)
++		return ret;
++	ret = enable_irq_wake(k->wake_irq);
++	if (ret)
++		disable_irq_wake(k->plug_irq);
++	return ret;
++}
++static int yoga_resume(struct device *dev)
++{
++	struct yoga_kb *k = dev_get_drvdata(dev);
++
++	if (device_may_wakeup(dev)) {
++		disable_irq_wake(k->wake_irq);
++		disable_irq_wake(k->plug_irq);
++	}
++	mod_delayed_work(system_wq, &k->power_work, 0);
++	return 0;
++}
++static DEFINE_SIMPLE_DEV_PM_OPS(yoga_pm, yoga_suspend, yoga_resume);
++static const struct of_device_id yoga_match[] = {
++	{ .compatible = "lenovo,tb520fu-pogo-keyboard" }, {}
++};
++MODULE_DEVICE_TABLE(of, yoga_match);
++static struct serdev_device_driver yoga_driver = {
++	.probe = yoga_probe,
++	.driver = { .name = "lenovo-yoga-pogo", .of_match_table = yoga_match, .pm = pm_sleep_ptr(&yoga_pm) },
++};
++module_serdev_device_driver(yoga_driver);
++MODULE_DESCRIPTION("Lenovo Yoga Tab Plus serial pogo keyboard and touchpad");
++MODULE_LICENSE("GPL");

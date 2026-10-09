@@ -1,0 +1,61 @@
+#!/bin/bash
+# Lenovo TB520FU: bring up the Qualcomm sensor core (SSC in the ADSP sensor PD).
+# hexagonrpcd serves the DSP the vendor sensor configuration (firmware repo,
+# /usr/share/qcom/sm8650/Lenovo/tb520fu) and the sensor registry. The registry
+# holds this tablet's factory calibrations: on first boot it is seeded from
+# the tablet's own persist partition, which Armada never touches.
+# Based on GUF296's qcom-sns-init (tb520fu-sensor-debs).
+set -euo pipefail
+
+ROOT=${ROOT:-/usr/share/qcom/sm8650/Lenovo/tb520fu}
+HEXAGONRPCD=${HEXAGONRPCD:-/usr/bin/hexagonrpcd}
+STATE=/var/lib/qcom-sns
+REGISTRY=$STATE/persist/sensors/registry
+RUNTIME=/run/tb520fu-sns
+PERSIST_DEV=/dev/disk/by-partlabel/persist
+log() { echo "tb520fu-sns-init: $*"; }
+
+[ -d "$ROOT/sensors/config" ] || { log "no sensor configuration in $ROOT"; exit 1; }
+
+if [ ! -e "$REGISTRY/sns_reg_version" ] && [ -e "$PERSIST_DEV" ]; then
+    m=$(mktemp -d /run/tb520fu-persist.XXXXXX)
+    if mount -o ro,noload "$PERSIST_DEV" "$m"; then
+        if [ -d "$m/sensors/registry/registry" ]; then
+            mkdir -p "$REGISTRY"
+            cp -a "$m/sensors/registry/." "$REGISTRY/"
+            log "seeded the registry from persist ($(find "$REGISTRY" -type f | wc -l) files)"
+        else
+            log "persist has no sensors/registry; the DSP will build a default one"
+        fi
+        umount "$m"
+    else
+        log "cannot mount persist; the DSP will build a default registry"
+    fi
+    rmdir "$m"
+fi
+mkdir -p "$REGISTRY/registry"
+
+waited=0
+while [ ! -e /dev/fastrpc-adsp ] && [ "$waited" -lt 60 ]; do
+    sleep 1; waited=$((waited + 1))
+done
+[ -e /dev/fastrpc-adsp ] || { log "no /dev/fastrpc-adsp after ${waited}s"; exit 1; }
+
+# The daemon maps these paths into its virtual Android file system. Libraries
+# belong below dsp/adsp; stock configuration also needs the Lapis SKU selector.
+mkdir -p "$RUNTIME/sensors" "$RUNTIME/socinfo" "$RUNTIME/dsp"
+ln -sfn "$ROOT/dsp/adsp" "$RUNTIME/dsp/adsp"
+ln -sfn "$ROOT/sensors/config" "$RUNTIME/sensors/config"
+ln -sfn "$REGISTRY" "$RUNTIME/sensors/registry"
+[ ! -d "$ROOT/acdb" ] || ln -sfn "$ROOT/acdb" "$RUNTIME/acdb"
+cp "$ROOT/sensors/sns_reg.conf" "$RUNTIME/sensors/sns_reg.conf"
+printf '\nfile=sensor_tp=/sys/devices/soc0/sensor_tp\n' >> "$RUNTIME/sensors/sns_reg.conf"
+for name in hw_platform platform_subtype platform_subtype_id platform_version soc_id revision; do
+    if [ -r "/sys/devices/soc0/$name" ]; then
+        cat "/sys/devices/soc0/$name" > "$RUNTIME/socinfo/$name"
+    fi
+done
+# The stock DT calls this board Lapis QRD. Never borrow another board's SKU.
+printf 'Lapis\n' > "$RUNTIME/socinfo/sensor_tp"
+[ -s "$RUNTIME/socinfo/hw_platform" ] || printf 'QRD\n' > "$RUNTIME/socinfo/hw_platform"
+exec "$HEXAGONRPCD" -f /dev/fastrpc-adsp -d adsp -s -R "$RUNTIME"

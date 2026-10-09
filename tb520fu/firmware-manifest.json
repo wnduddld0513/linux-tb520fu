@@ -1,5 +1,5 @@
 {
-  "description": "Local Lenovo TB520FU stock firmware used for display/touch bring-up. Payloads are intentionally untracked.",
+  "description": "Locally owned TB520FU firmware, DSP libraries and complete stock SSC registry configuration. No payloads are committed.",
   "files": {
     "novatek_ts_tianma_fw.bin": {
       "source": "vendor/firmware/novatek_ts_tianma_fw.bin",
@@ -30,6 +30,1634 @@
       "destination": "usr/lib/firmware/qcom/gmu_gen70900.bin",
       "size": 78588,
       "sha256": "9685f62c42543befcaee68d25355e16bf55cdb0d573bddcc9f6633f59eec3f72"
+    },
+    "aw882xx_acf.bin": {
+      "source": "vendor/firmware/aw882xx_acf.bin",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/aw882xx_acf.bin",
+      "size": 5216,
+      "sha256": "12ead9e2a6d18c5b923269c8496e169c7d304ab7ff3543485f062b999adff4c1"
+    },
+    "vpu33_4v.mbn": {
+      "source": "vendor/firmware/vpu33_4v.mbn",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/vpu33_4v.mbn",
+      "size": 2339528,
+      "sha256": "bd3bbbbfe7e7cb324c5a69810893c40a2ebae58c01d7b532ce34ea0532d2844f"
+    },
+    "NON-HLOS.bin:image/adsp.b00": {
+      "source": "NON-HLOS.bin:image/adsp.b00",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b00",
+      "size": 1844,
+      "sha256": "38d305a30d2852c3b3aaeacaf14eb24b96d1ae8fc2792a4f1d153db0a6a24398"
+    },
+    "NON-HLOS.bin:image/adsp.b01": {
+      "source": "NON-HLOS.bin:image/adsp.b01",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b01",
+      "size": 21032,
+      "sha256": "01b8884715362d3074fc2b345ed82ba6f69b7a4e7a41226ef736f9e443a310b7"
+    },
+    "NON-HLOS.bin:image/adsp.b02": {
+      "source": "NON-HLOS.bin:image/adsp.b02",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b02",
+      "size": 65996,
+      "sha256": "74cbf053572efa4cba09c8a0ac7bbedac9da1c2f5ad0d82b6bb7993989581c0a"
+    },
+    "NON-HLOS.bin:image/adsp.b03": {
+      "source": "NON-HLOS.bin:image/adsp.b03",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b03",
+      "size": 88232,
+      "sha256": "93b72ad4cffea6ef086abcc04ea7736cf65f931a5e849ac881d5b40df0c455f9"
+    },
+    "NON-HLOS.bin:image/adsp.b04": {
+      "source": "NON-HLOS.bin:image/adsp.b04",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b04",
+      "size": 28084,
+      "sha256": "c1debbae7239cde6bbd50a93b8e7a60c06be804e3d64db38679358e0e110bbf2"
+    },
+    "NON-HLOS.bin:image/adsp.b05": {
+      "source": "NON-HLOS.bin:image/adsp.b05",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b05",
+      "size": 51280,
+      "sha256": "0eb2b6121ea61a2fdae464423971ee992d2d510b628d39049796893f4cfe6f4c"
+    },
+    "NON-HLOS.bin:image/adsp.b06": {
+      "source": "NON-HLOS.bin:image/adsp.b06",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b06",
+      "size": 811008,
+      "sha256": "aa5eb6aebaadabe8574d79de62c6b8bf8c0a86772a8895b3b540dbcf1c51012f"
+    },
+    "NON-HLOS.bin:image/adsp.b07": {
+      "source": "NON-HLOS.bin:image/adsp.b07",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b07",
+      "size": 240,
+      "sha256": "3ae3917e845264329c4481352425e857b92e00ac048ef4c191bc002210ca2d4f"
+    },
+    "NON-HLOS.bin:image/adsp.b08": {
+      "source": "NON-HLOS.bin:image/adsp.b08",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b08",
+      "size": 9732,
+      "sha256": "808f76b03b746f1f29b1619df6c630478ebf0b43539508add1e76fd681e71b25"
+    },
+    "NON-HLOS.bin:image/adsp.b09": {
+      "source": "NON-HLOS.bin:image/adsp.b09",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b09",
+      "size": 2810276,
+      "sha256": "c520c5372c5331784941314c88adfb0c888ea57b843b648f05242d3366415a8d"
+    },
+    "NON-HLOS.bin:image/adsp.b10": {
+      "source": "NON-HLOS.bin:image/adsp.b10",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b10",
+      "size": 311620,
+      "sha256": "cba181aa9e13de2d289519eaeeb6183a8fa0ba8945df47b9d1cf1248478fe526"
+    },
+    "NON-HLOS.bin:image/adsp.b11": {
+      "source": "NON-HLOS.bin:image/adsp.b11",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b11",
+      "size": 2584,
+      "sha256": "49567f2c4919bc87dec0dbc6abeb441802e30820b23c77358d7b68a9b7d2ca6a"
+    },
+    "NON-HLOS.bin:image/adsp.b12": {
+      "source": "NON-HLOS.bin:image/adsp.b12",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b12",
+      "size": 12396,
+      "sha256": "4ec04ccdb68d5d24712f4de34c87bdb7a13dd68418c24c0ae9fe8efa12b1e351"
+    },
+    "NON-HLOS.bin:image/adsp.b13": {
+      "source": "NON-HLOS.bin:image/adsp.b13",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b13",
+      "size": 1212,
+      "sha256": "6db58e079d61bd49ec10d05569fd171e89a7d58993b969c830cfcc4f12a1f27a"
+    },
+    "NON-HLOS.bin:image/adsp.b14": {
+      "source": "NON-HLOS.bin:image/adsp.b14",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b14",
+      "size": 234920,
+      "sha256": "010d1a48a7590c3097c652c3869866784931dee6d43cbf2a2dea8f2e48ffadae"
+    },
+    "NON-HLOS.bin:image/adsp.b15": {
+      "source": "NON-HLOS.bin:image/adsp.b15",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b15",
+      "size": 153220,
+      "sha256": "b14098c6e21d634adb7f6920b91504523b1b2b237602fc06250571e1a941da0c"
+    },
+    "NON-HLOS.bin:image/adsp.b16": {
+      "source": "NON-HLOS.bin:image/adsp.b16",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b16",
+      "size": 82,
+      "sha256": "0fe43396255e7f6180cd82e55964796781a8b2c18efde4163f3f240d949812e7"
+    },
+    "NON-HLOS.bin:image/adsp.b17": {
+      "source": "NON-HLOS.bin:image/adsp.b17",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b17",
+      "size": 106496,
+      "sha256": "24cfa6a85b837f55321fe27cc5257ababe792b6110286faf7612bafb1b9e33fe"
+    },
+    "NON-HLOS.bin:image/adsp.b18": {
+      "source": "NON-HLOS.bin:image/adsp.b18",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b18",
+      "size": 2694884,
+      "sha256": "f74b33b35e9939f8eedf8b8cc156da310e119672f1fd76595777a5d4c4972d74"
+    },
+    "NON-HLOS.bin:image/adsp.b19": {
+      "source": "NON-HLOS.bin:image/adsp.b19",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b19",
+      "size": 54136,
+      "sha256": "bd414b5e76ff278373efc4a7c588b7e48272285efb777b6a31409fc6c6bb0faf"
+    },
+    "NON-HLOS.bin:image/adsp.b20": {
+      "source": "NON-HLOS.bin:image/adsp.b20",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b20",
+      "size": 272,
+      "sha256": "99dbc54290c34ee1c80155fe9c03f28243a4763c9b83ccbc2b84115d2fc6d5d6"
+    },
+    "NON-HLOS.bin:image/adsp.b21": {
+      "source": "NON-HLOS.bin:image/adsp.b21",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b21",
+      "size": 386201,
+      "sha256": "91df730162287c3dfe88f3b29c83f3d38245ed2da27a4793a84b0cb8cc7135fa"
+    },
+    "NON-HLOS.bin:image/adsp.b22": {
+      "source": "NON-HLOS.bin:image/adsp.b22",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b22",
+      "size": 2465496,
+      "sha256": "ce65ecde66a77e2b8d7b6c979251f1346c56e986b705544065bfc6108422b553"
+    },
+    "NON-HLOS.bin:image/adsp.b23": {
+      "source": "NON-HLOS.bin:image/adsp.b23",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b23",
+      "size": 2687032,
+      "sha256": "dea1565d047713a5cb39b760bcda491f38209f8bf43f75aef86137c96f4f0215"
+    },
+    "NON-HLOS.bin:image/adsp.b25": {
+      "source": "NON-HLOS.bin:image/adsp.b25",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b25",
+      "size": 108,
+      "sha256": "8948a6b88376b9d3f75e89f33ea0c03e149d6ebde637874951c121d0b6b17efd"
+    },
+    "NON-HLOS.bin:image/adsp.b26": {
+      "source": "NON-HLOS.bin:image/adsp.b26",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b26",
+      "size": 9296,
+      "sha256": "7c8015c2281853e345538a6071fbd8d7c1d170fd8bedd83a67a54aba68ad0903"
+    },
+    "NON-HLOS.bin:image/adsp.b27": {
+      "source": "NON-HLOS.bin:image/adsp.b27",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b27",
+      "size": 37408,
+      "sha256": "304ad206e66ee3eb626af3d1e7ae3996e6ea5d23a65c46def37e4e81538ec4fe"
+    },
+    "NON-HLOS.bin:image/adsp.b28": {
+      "source": "NON-HLOS.bin:image/adsp.b28",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b28",
+      "size": 315956,
+      "sha256": "c53e82e0140c369ba9f3c15bdb7478aacfeb49112c892877e4165190246c069c"
+    },
+    "NON-HLOS.bin:image/adsp.b29": {
+      "source": "NON-HLOS.bin:image/adsp.b29",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b29",
+      "size": 159141,
+      "sha256": "3cbb46166d77b40065612ef6a7f35398db7b89bdd5b152299b849b055b19abe5"
+    },
+    "NON-HLOS.bin:image/adsp.b30": {
+      "source": "NON-HLOS.bin:image/adsp.b30",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b30",
+      "size": 151572,
+      "sha256": "3c9afbb3b5eb40d5dc7be141631bec0653f38693597a6d0e031825214bb02d69"
+    },
+    "NON-HLOS.bin:image/adsp.b31": {
+      "source": "NON-HLOS.bin:image/adsp.b31",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b31",
+      "size": 8412,
+      "sha256": "70c6f03d9c63640994862919fe2a0c3bf6d855efcdf7bea5d94a69a4330444d5"
+    },
+    "NON-HLOS.bin:image/adsp.b32": {
+      "source": "NON-HLOS.bin:image/adsp.b32",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b32",
+      "size": 104753,
+      "sha256": "c4228fadab42510892c5548dfd9702a32d22efc505bc2d1b78da75acce5a207f"
+    },
+    "NON-HLOS.bin:image/adsp.b33": {
+      "source": "NON-HLOS.bin:image/adsp.b33",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b33",
+      "size": 17652,
+      "sha256": "e7ed2904607bf1a8ea796546c2700d57ba0872ef011a07189c94ce4132526924"
+    },
+    "NON-HLOS.bin:image/adsp.b34": {
+      "source": "NON-HLOS.bin:image/adsp.b34",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b34",
+      "size": 8304,
+      "sha256": "ecf302eb4d7bae3f142fa74daeac9b49c040bce2e433beb579b465fdcf33b415"
+    },
+    "NON-HLOS.bin:image/adsp.b35": {
+      "source": "NON-HLOS.bin:image/adsp.b35",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b35",
+      "size": 14908,
+      "sha256": "8d6b77cea61b6488f5e8ce65935bbe2104ce5751a8627ada391419f51dce9f1d"
+    },
+    "NON-HLOS.bin:image/adsp.b36": {
+      "source": "NON-HLOS.bin:image/adsp.b36",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b36",
+      "size": 53080,
+      "sha256": "9f83facae564f149cb639e646a7d10e2d01a53b57a01d727b23bfb179aab2dca"
+    },
+    "NON-HLOS.bin:image/adsp.b37": {
+      "source": "NON-HLOS.bin:image/adsp.b37",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b37",
+      "size": 8648,
+      "sha256": "479b0dc8abb1deddd7c6f8b97cb02663043cc7124fd5202fd5802818cac7a0cf"
+    },
+    "NON-HLOS.bin:image/adsp.b38": {
+      "source": "NON-HLOS.bin:image/adsp.b38",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b38",
+      "size": 54092,
+      "sha256": "858f7aebeb625d0b9c3273bd1935845bcff52453e104a35829acbdfee480772a"
+    },
+    "NON-HLOS.bin:image/adsp.b39": {
+      "source": "NON-HLOS.bin:image/adsp.b39",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b39",
+      "size": 176128,
+      "sha256": "3cf8d7a6f072faadc67059463d02be939e4ae3185e05361dc94b3b18d1e18e45"
+    },
+    "NON-HLOS.bin:image/adsp.b40": {
+      "source": "NON-HLOS.bin:image/adsp.b40",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b40",
+      "size": 7231148,
+      "sha256": "975171988d216cd29c09eae2a92cc38a35945d3c7ef975ee98d79abb6a9984ad"
+    },
+    "NON-HLOS.bin:image/adsp.b41": {
+      "source": "NON-HLOS.bin:image/adsp.b41",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b41",
+      "size": 3260424,
+      "sha256": "fb7ba0131ecafbd87df40d2717ed45b7b47ee9432c3c56dc9f746fa52e986146"
+    },
+    "NON-HLOS.bin:image/adsp.b42": {
+      "source": "NON-HLOS.bin:image/adsp.b42",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b42",
+      "size": 20,
+      "sha256": "271c5783def587733c57edd67523fd9890a97b12fd2ee0ad4237226454bb6b85"
+    },
+    "NON-HLOS.bin:image/adsp.b43": {
+      "source": "NON-HLOS.bin:image/adsp.b43",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b43",
+      "size": 7332,
+      "sha256": "b0bdb92e60cb111b5824c34d52ec054555162dd61261d1cafe8241095577c8d6"
+    },
+    "NON-HLOS.bin:image/adsp.b44": {
+      "source": "NON-HLOS.bin:image/adsp.b44",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b44",
+      "size": 3444,
+      "sha256": "58d281c07c202e44d2f2c5dd7a0b411f22849101d7b3385ee3cbf576fb1e0e43"
+    },
+    "NON-HLOS.bin:image/adsp.b45": {
+      "source": "NON-HLOS.bin:image/adsp.b45",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b45",
+      "size": 30240,
+      "sha256": "6bb3c7ee4bea6b299268c7b7d89114d5d4dfb5832e89f67882cb67a4eef2c495"
+    },
+    "NON-HLOS.bin:image/adsp.b46": {
+      "source": "NON-HLOS.bin:image/adsp.b46",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b46",
+      "size": 352460,
+      "sha256": "9c74a05e74e22afcee29339d76aa2ebf5d2b47ddc1a0ab975a44a084be275b1a"
+    },
+    "NON-HLOS.bin:image/adsp.b47": {
+      "source": "NON-HLOS.bin:image/adsp.b47",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b47",
+      "size": 10948,
+      "sha256": "cf04e48e570b720f4e25b3ab11e151c1dbad492096fd051028436128541b68eb"
+    },
+    "NON-HLOS.bin:image/adsp.b48": {
+      "source": "NON-HLOS.bin:image/adsp.b48",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b48",
+      "size": 23648,
+      "sha256": "76ffd3a1963416388e2cae5043876fe06cd9e9e62d57432f1f65ec452292a8db"
+    },
+    "NON-HLOS.bin:image/adsp.b49": {
+      "source": "NON-HLOS.bin:image/adsp.b49",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b49",
+      "size": 823296,
+      "sha256": "853e00c5dcea7636b2b085798c09b131d5af747f00c5f568f4d6997443899e02"
+    },
+    "NON-HLOS.bin:image/adsp.b50": {
+      "source": "NON-HLOS.bin:image/adsp.b50",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b50",
+      "size": 81859,
+      "sha256": "1ebe13a473a07f65889b12a83c7bbb6e20cec52c2777d79cea4f11ad5eb02a08"
+    },
+    "NON-HLOS.bin:image/adsp.b51": {
+      "source": "NON-HLOS.bin:image/adsp.b51",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b51",
+      "size": 966656,
+      "sha256": "00c53ca3a44fc9995586762313bd7ba24b65092b498e47a02279c632cd58c307"
+    },
+    "NON-HLOS.bin:image/adsp.b52": {
+      "source": "NON-HLOS.bin:image/adsp.b52",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b52",
+      "size": 53248,
+      "sha256": "cb35180315f089448f0dd2fa5a1ad88a90ebb28fb390fc5492d5ff9d322d1a38"
+    },
+    "NON-HLOS.bin:image/adsp.b53": {
+      "source": "NON-HLOS.bin:image/adsp.b53",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b53",
+      "size": 3593376,
+      "sha256": "57b81762808e5900752270ace4832a07fd1b2ac609be3d29238fd5d7aee9a23a"
+    },
+    "NON-HLOS.bin:image/adsp.b55": {
+      "source": "NON-HLOS.bin:image/adsp.b55",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.b55",
+      "size": 6440,
+      "sha256": "00d0806a6a3d609af8016a4c45bd24bedec6894e04551e57aad697358d01c5bd"
+    },
+    "NON-HLOS.bin:image/adsp.mdt": {
+      "source": "NON-HLOS.bin:image/adsp.mdt",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp.mdt",
+      "size": 8284,
+      "sha256": "67386dcb1f956ee2989c545ad96c1e84e54b4a7ae4882c394f272fdb4ff3e731"
+    },
+    "NON-HLOS.bin:image/adsp_dtb.b00": {
+      "source": "NON-HLOS.bin:image/adsp_dtb.b00",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp_dtb.b00",
+      "size": 148,
+      "sha256": "186be26a7565912e98f890cca55a42d600e91482b93328d42474f271a1a82d1a"
+    },
+    "NON-HLOS.bin:image/adsp_dtb.b01": {
+      "source": "NON-HLOS.bin:image/adsp_dtb.b01",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp_dtb.b01",
+      "size": 56640,
+      "sha256": "571867b5147609f482120067ffa7a91f3fb67e7e2724bb962b7a00a7010fa170"
+    },
+    "NON-HLOS.bin:image/adsp_dtb.b02": {
+      "source": "NON-HLOS.bin:image/adsp_dtb.b02",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp_dtb.b02",
+      "size": 3896,
+      "sha256": "9ee2e59c5da6a3885dd812abbd00e881c74306d018b327caba49375359e57879"
+    },
+    "NON-HLOS.bin:image/adsp_dtb.mdt": {
+      "source": "NON-HLOS.bin:image/adsp_dtb.mdt",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/adsp_dtb.mdt",
+      "size": 4044,
+      "sha256": "e0eed459800b8e507b79ddad5414e71a641d2e2f1985bb7af5ebf5c487cc7d2a"
+    },
+    "NON-HLOS.bin:image/cdsp.b00": {
+      "source": "NON-HLOS.bin:image/cdsp.b00",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/cdsp.b00",
+      "size": 564,
+      "sha256": "ed7c401b875dfd3c6f556f9bd15204a78adfc5dcd48bcb724560de618f8cf717"
+    },
+    "NON-HLOS.bin:image/cdsp.b01": {
+      "source": "NON-HLOS.bin:image/cdsp.b01",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/cdsp.b01",
+      "size": 26508,
+      "sha256": "9aaaa6bfae0360e81abf65d84ff63f33d16c348ca8d5adcee2a91d499244f03a"
+    },
+    "NON-HLOS.bin:image/cdsp.b02": {
+      "source": "NON-HLOS.bin:image/cdsp.b02",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/cdsp.b02",
+      "size": 84452,
+      "sha256": "12837a3d7ba0f5eb4d10d81dd70789b460d3c2b47321a95ebc8cd6914d23e7c8"
+    },
+    "NON-HLOS.bin:image/cdsp.b03": {
+      "source": "NON-HLOS.bin:image/cdsp.b03",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/cdsp.b03",
+      "size": 122610,
+      "sha256": "abede1b85e14f995f88245a8ccd968bb98a06865d7f67169b90ab72011c7a93e"
+    },
+    "NON-HLOS.bin:image/cdsp.b04": {
+      "source": "NON-HLOS.bin:image/cdsp.b04",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/cdsp.b04",
+      "size": 1192,
+      "sha256": "52d99b74ae2c0a8d614d62a9f9eb7ad4aa6d33048c095fa11aa31ecd016fd45b"
+    },
+    "NON-HLOS.bin:image/cdsp.b05": {
+      "source": "NON-HLOS.bin:image/cdsp.b05",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/cdsp.b05",
+      "size": 2212420,
+      "sha256": "d0db3a357abe5e5d876971d577287826ac20ab8647028428326b1d777fd81a77"
+    },
+    "NON-HLOS.bin:image/cdsp.b06": {
+      "source": "NON-HLOS.bin:image/cdsp.b06",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/cdsp.b06",
+      "size": 114696,
+      "sha256": "9eaef16657f6682feac0eb643814aa618fc8269c3f51ffcec2d2845fdb459bb2"
+    },
+    "NON-HLOS.bin:image/cdsp.b07": {
+      "source": "NON-HLOS.bin:image/cdsp.b07",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/cdsp.b07",
+      "size": 2776,
+      "sha256": "68f06be802627bb6973c7c8a3214063f139edd4552b8058ce9b1ee2a8fce208a"
+    },
+    "NON-HLOS.bin:image/cdsp.b08": {
+      "source": "NON-HLOS.bin:image/cdsp.b08",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/cdsp.b08",
+      "size": 116918,
+      "sha256": "a3ad91b9d28768b56242adfd21f7fde40695e1cdace5ac534a61c824423bd03c"
+    },
+    "NON-HLOS.bin:image/cdsp.b09": {
+      "source": "NON-HLOS.bin:image/cdsp.b09",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/cdsp.b09",
+      "size": 3043604,
+      "sha256": "ecb33f16699a96a6ac31ff93ceaac5a444998d8675fde603c4e3c77e9c062a4f"
+    },
+    "NON-HLOS.bin:image/cdsp.b10": {
+      "source": "NON-HLOS.bin:image/cdsp.b10",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/cdsp.b10",
+      "size": 65224,
+      "sha256": "348722de6b25056d688e7063c7f115de9092ba6b23be8577950e4a66eb0fca45"
+    },
+    "NON-HLOS.bin:image/cdsp.b11": {
+      "source": "NON-HLOS.bin:image/cdsp.b11",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/cdsp.b11",
+      "size": 4272,
+      "sha256": "4b28df5549249db3140a378371d86daa46091da92564a29c06027bbe5110303e"
+    },
+    "NON-HLOS.bin:image/cdsp.b12": {
+      "source": "NON-HLOS.bin:image/cdsp.b12",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/cdsp.b12",
+      "size": 104240,
+      "sha256": "87615628bd2fc6a0cef47cd8ccd733bc63086130dbc67b8197a7261779006e41"
+    },
+    "NON-HLOS.bin:image/cdsp.b13": {
+      "source": "NON-HLOS.bin:image/cdsp.b13",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/cdsp.b13",
+      "size": 4704,
+      "sha256": "e7e34e65a65d5ff9764e897eab5b1bbdde94cd2a729a8605b0d30d772cb3272f"
+    },
+    "NON-HLOS.bin:image/cdsp.b15": {
+      "source": "NON-HLOS.bin:image/cdsp.b15",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/cdsp.b15",
+      "size": 4520,
+      "sha256": "173a837986f11d3e74a08c2b28972b336eee47c2c06c775a6ec60b3cf17e1a15"
+    },
+    "NON-HLOS.bin:image/cdsp.mdt": {
+      "source": "NON-HLOS.bin:image/cdsp.mdt",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/cdsp.mdt",
+      "size": 5084,
+      "sha256": "1cc5f2a4a58c6934a0f52ef807c6e2de129fc623804dd0d3819e93d66adae5ad"
+    },
+    "NON-HLOS.bin:image/cdsp_dtb.b00": {
+      "source": "NON-HLOS.bin:image/cdsp_dtb.b00",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/cdsp_dtb.b00",
+      "size": 148,
+      "sha256": "4d7d5a1ca84c0a0bf800304092098ce5ff3504a9f234735a85a5be2bfe359ecd"
+    },
+    "NON-HLOS.bin:image/cdsp_dtb.b01": {
+      "source": "NON-HLOS.bin:image/cdsp_dtb.b01",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/cdsp_dtb.b01",
+      "size": 31200,
+      "sha256": "f41ef1f6b86b9d1ee6cee0717ff46ae4706674f3b9eee48927bde618fac94f4b"
+    },
+    "NON-HLOS.bin:image/cdsp_dtb.b02": {
+      "source": "NON-HLOS.bin:image/cdsp_dtb.b02",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/cdsp_dtb.b02",
+      "size": 3896,
+      "sha256": "5c16ddc6ec1a66f1912262e7fb6c56cf66b90decd32668ac62659e477e00a533"
+    },
+    "NON-HLOS.bin:image/cdsp_dtb.mdt": {
+      "source": "NON-HLOS.bin:image/cdsp_dtb.mdt",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/cdsp_dtb.mdt",
+      "size": 4044,
+      "sha256": "20925dc7906da358e3db2c5f212e4394d1259152d982cbc8bc16885987e63c0a"
+    },
+    "NON-HLOS.bin:image/kiwi/bdwlan_row_lapis.elf": {
+      "source": "NON-HLOS.bin:image/kiwi/bdwlan_row_lapis.elf",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/bdwlan_row_lapis.elf",
+      "size": 88860,
+      "sha256": "df66377f45bba28c447baa5591df572e02da219dd92f1244a3623b4557e7cfbf"
+    },
+    "BTFM.bin:image/hmtbtfw20.tlv": {
+      "source": "BTFM.bin:image/hmtbtfw20.tlv",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/hmtbtfw20.tlv",
+      "size": 265528,
+      "sha256": "b4e7f61e7dd090e56811860a7781ff3b0ce8e87cc0480feaab34bf4f614308c5"
+    },
+    "BTFM.bin:image/hmtnv20_Lapis.bin": {
+      "source": "BTFM.bin:image/hmtnv20_Lapis.bin",
+      "destination": "usr/lib/firmware/qcom/sm8650/lenovo/tb520fu/hmtnv20_Lapis.bin",
+      "size": 9492,
+      "sha256": "a004babc6c9cc23c4a23e596d1d20f2e982aee0415275c8f710f1a3ca2c66a78"
+    },
+    "vendor/etc/sensors/config/json.lst": {
+      "source": "vendor/etc/sensors/config/json.lst",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/json.lst",
+      "size": 2099,
+      "sha256": "e5d3fbfea9af89a6d3960e455ca1d94e2c513900a19ef8562b790ae4b4cd6789"
+    },
+    "vendor/etc/sensors/config/lahai_aw963xx_0.json": {
+      "source": "vendor/etc/sensors/config/lahai_aw963xx_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lahai_aw963xx_0.json",
+      "size": 3125,
+      "sha256": "a8486377eb0b14e99d540c5ab987fd6da5367c77d1557f603065e56daa3c3f18"
+    },
+    "vendor/etc/sensors/config/lahai_aw963xx_0_sar_register_kirby.json": {
+      "source": "vendor/etc/sensors/config/lahai_aw963xx_0_sar_register_kirby.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lahai_aw963xx_0_sar_register_kirby.json",
+      "size": 7832,
+      "sha256": "a8871bb89c9cb60bcb516bc5ec35b36f150a7871e9a6688e1d5f2e45439188c4"
+    },
+    "vendor/etc/sensors/config/lahai_aw963xx_0_sar_register_lapis.json": {
+      "source": "vendor/etc/sensors/config/lahai_aw963xx_0_sar_register_lapis.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lahai_aw963xx_0_sar_register_lapis.json",
+      "size": 7835,
+      "sha256": "9bf7a219668eb2530b3d4c3d8a52f983dd9b010101573a91ea954c9924bf44c2"
+    },
+    "vendor/etc/sensors/config/lahai_mmc56x3x_0.json": {
+      "source": "vendor/etc/sensors/config/lahai_mmc56x3x_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lahai_mmc56x3x_0.json",
+      "size": 5452,
+      "sha256": "5dd3d735d094d8719fe07ce87e1c0ecdb5ba7b314460f737c0df22066d517178"
+    },
+    "vendor/etc/sensors/config/lahai_qmc630x_0.json": {
+      "source": "vendor/etc/sensors/config/lahai_qmc630x_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lahai_qmc630x_0.json",
+      "size": 6118,
+      "sha256": "18b954396beac3d3f660666235e3439d1ac66b119657a07d0e4c8d24f1b6abd7"
+    },
+    "vendor/etc/sensors/config/lahai_stk3a5x_0.json": {
+      "source": "vendor/etc/sensors/config/lahai_stk3a5x_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lahai_stk3a5x_0.json",
+      "size": 3377,
+      "sha256": "4adbe061b8853f6ad40d8583b0f5d8f8bd6267739d0dadb72305206995ed201e"
+    },
+    "vendor/etc/sensors/config/lanai_ads610x_0.json": {
+      "source": "vendor/etc/sensors/config/lanai_ads610x_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_ads610x_0.json",
+      "size": 3201,
+      "sha256": "34c9b547f251339a1690be2e1d67d4e240bfc8b4d470c1eaf972f3e099913122"
+    },
+    "vendor/etc/sensors/config/lanai_ak991x_0.json": {
+      "source": "vendor/etc/sensors/config/lanai_ak991x_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_ak991x_0.json",
+      "size": 3193,
+      "sha256": "159e6d14e60bd8fcb1bcaa2500364a38984a1fd1ddfef91e2e3e8a73bf3cf2d3"
+    },
+    "vendor/etc/sensors/config/lanai_bu52053nvx_0_kirby.json": {
+      "source": "vendor/etc/sensors/config/lanai_bu52053nvx_0_kirby.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_bu52053nvx_0_kirby.json",
+      "size": 2788,
+      "sha256": "be13a6faf39d12437dde162ecc2ceaf7c9d58e41a7849f2fef7345264e043098"
+    },
+    "vendor/etc/sensors/config/lanai_bu52053nvx_0_lapis.json": {
+      "source": "vendor/etc/sensors/config/lanai_bu52053nvx_0_lapis.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_bu52053nvx_0_lapis.json",
+      "size": 2789,
+      "sha256": "26860c1e23c53906d09168c60fb749768ab157a1da5d4a727169ce985f8f47f8"
+    },
+    "vendor/etc/sensors/config/lanai_default_sensors.json": {
+      "source": "vendor/etc/sensors/config/lanai_default_sensors.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_default_sensors.json",
+      "size": 5913,
+      "sha256": "eeefcc505cd533459276c0df1949c003d36df8ecb83e83744ea6538297253738"
+    },
+    "vendor/etc/sensors/config/lanai_dynamic_sensors.json": {
+      "source": "vendor/etc/sensors/config/lanai_dynamic_sensors.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_dynamic_sensors.json",
+      "size": 521,
+      "sha256": "29ce5b251917c81a5904ba4876e6847ababc0dc1aaef4cddc8fe1a94e6ed1672"
+    },
+    "vendor/etc/sensors/config/lanai_dynamic_sensors_template.json": {
+      "source": "vendor/etc/sensors/config/lanai_dynamic_sensors_template.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_dynamic_sensors_template.json",
+      "size": 556,
+      "sha256": "a248f6aebb52f1e08311a1150449b72040dbd2697e33e99bf6b4dbdbf5bddc60"
+    },
+    "vendor/etc/sensors/config/lanai_fcal_ak991x_0.json": {
+      "source": "vendor/etc/sensors/config/lanai_fcal_ak991x_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_fcal_ak991x_0.json",
+      "size": 2639,
+      "sha256": "139d209ef7f0cb524864b7b1ddd343097823e93ecd559d890cf78303d61065c6"
+    },
+    "vendor/etc/sensors/config/lanai_hdk_ak991x_0.json": {
+      "source": "vendor/etc/sensors/config/lanai_hdk_ak991x_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_hdk_ak991x_0.json",
+      "size": 2889,
+      "sha256": "32f6b3d71743ec85b6573e70fe8e3213c24ae1a664c6d9496b005530ededd962"
+    },
+    "vendor/etc/sensors/config/lanai_hdk_lsm6dsv_0.json": {
+      "source": "vendor/etc/sensors/config/lanai_hdk_lsm6dsv_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_hdk_lsm6dsv_0.json",
+      "size": 385,
+      "sha256": "2a922a2ce6ddfe26f12a9c6a89ceabd3c82dc6eb64c9bf84b8437251c4fc5649"
+    },
+    "vendor/etc/sensors/config/lanai_hdk_lsm6dsv_1.json": {
+      "source": "vendor/etc/sensors/config/lanai_hdk_lsm6dsv_1.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_hdk_lsm6dsv_1.json",
+      "size": 385,
+      "sha256": "b44a03cd53ceec49711e72d9b000097aa16fd803f003522a267726a0c035913d"
+    },
+    "vendor/etc/sensors/config/lanai_icm4x6xx_0_kirby.json": {
+      "source": "vendor/etc/sensors/config/lanai_icm4x6xx_0_kirby.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_icm4x6xx_0_kirby.json",
+      "size": 7964,
+      "sha256": "d5cf9788eef51c3631d0c4d73a80b8f31b2245f43c425c8de068d2993313063c"
+    },
+    "vendor/etc/sensors/config/lanai_icm4x6xx_0_lapis.json": {
+      "source": "vendor/etc/sensors/config/lanai_icm4x6xx_0_lapis.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_icm4x6xx_0_lapis.json",
+      "size": 7964,
+      "sha256": "e5a3339fcf67aa1ee606bca57f9e52034e1841c6f0dc73d706f4fdd2c3da3269"
+    },
+    "vendor/etc/sensors/config/lanai_irq.json": {
+      "source": "vendor/etc/sensors/config/lanai_irq.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_irq.json",
+      "size": 151,
+      "sha256": "7570b4315cbc7626be75026d8aaa8464867043323ebe592d88b126f23af44e93"
+    },
+    "vendor/etc/sensors/config/lanai_lps22df_0.json": {
+      "source": "vendor/etc/sensors/config/lanai_lps22df_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_lps22df_0.json",
+      "size": 4231,
+      "sha256": "87dfff1dd4f370e68e4248309d2e6785d62f00bed6af4ce97a9a59c62e52759b"
+    },
+    "vendor/etc/sensors/config/lanai_lsm6dso_kirby.json": {
+      "source": "vendor/etc/sensors/config/lanai_lsm6dso_kirby.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_lsm6dso_kirby.json",
+      "size": 8531,
+      "sha256": "313c62cf90ea75d37c5a47ad49f969ee658d4117f982d1e9372b494fdc189aa3"
+    },
+    "vendor/etc/sensors/config/lanai_lsm6dso_lapis.json": {
+      "source": "vendor/etc/sensors/config/lanai_lsm6dso_lapis.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_lsm6dso_lapis.json",
+      "size": 8531,
+      "sha256": "8c9ba38fdf3968423f1d21971c6b17f2a14827e0d63fc647b2051acac6b4fce3"
+    },
+    "vendor/etc/sensors/config/lanai_lsm6dsv_0.json": {
+      "source": "vendor/etc/sensors/config/lanai_lsm6dsv_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_lsm6dsv_0.json",
+      "size": 8693,
+      "sha256": "6c8244d0325222162e097f34d0574d869d6f973cb7e57d5011b18ff3c4c5183f"
+    },
+    "vendor/etc/sensors/config/lanai_lsm6dsv_1.json": {
+      "source": "vendor/etc/sensors/config/lanai_lsm6dsv_1.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_lsm6dsv_1.json",
+      "size": 8694,
+      "sha256": "e4ecef99579ff36a2830473e282b85de372bab25e9588e71111b21ba7de48d9f"
+    },
+    "vendor/etc/sensors/config/lanai_mtp_ak991x_0.json": {
+      "source": "vendor/etc/sensors/config/lanai_mtp_ak991x_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_mtp_ak991x_0.json",
+      "size": 394,
+      "sha256": "c1d7a72a554c6d2ce8eeb8dbfc3ac178a93d16bd0e81ee11813f411c8af05f03"
+    },
+    "vendor/etc/sensors/config/lanai_mtp_lsm6dsv_0.json": {
+      "source": "vendor/etc/sensors/config/lanai_mtp_lsm6dsv_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_mtp_lsm6dsv_0.json",
+      "size": 386,
+      "sha256": "9dfb4ce9eb0bdcf2f71c7b1115ae1ee12326991ad767bf8204e061b2104cf6e8"
+    },
+    "vendor/etc/sensors/config/lanai_mtp_lsm6dsv_1.json": {
+      "source": "vendor/etc/sensors/config/lanai_mtp_lsm6dsv_1.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_mtp_lsm6dsv_1.json",
+      "size": 386,
+      "sha256": "f960ab3ab0ed5038b617377b00c315eee94ac081dda60a8dc9a0aa24c2da8f17"
+    },
+    "vendor/etc/sensors/config/lanai_power_0.json": {
+      "source": "vendor/etc/sensors/config/lanai_power_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_power_0.json",
+      "size": 287,
+      "sha256": "b7edbe9d846695b3e223defee5370ef3ed25ed992ebb0205feb1dc127105633f"
+    },
+    "vendor/etc/sensors/config/lanai_qrd_ak991x_0.json": {
+      "source": "vendor/etc/sensors/config/lanai_qrd_ak991x_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_qrd_ak991x_0.json",
+      "size": 2915,
+      "sha256": "683ed2650073159c463807594a801eb1ee26deca73acf84670b3ecf54a046b1c"
+    },
+    "vendor/etc/sensors/config/lanai_qrd_lsm6dsv_0.json": {
+      "source": "vendor/etc/sensors/config/lanai_qrd_lsm6dsv_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_qrd_lsm6dsv_0.json",
+      "size": 8914,
+      "sha256": "96a35458b99d0a18c54fe9c22d4959545e194b5c1e4714d17b6e65bdaa739fea"
+    },
+    "vendor/etc/sensors/config/lanai_qrd_tmd2755_0.json": {
+      "source": "vendor/etc/sensors/config/lanai_qrd_tmd2755_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_qrd_tmd2755_0.json",
+      "size": 7197,
+      "sha256": "03be902d66ff36282245df00b4e4fa445d4f3c9cc2762e7efa04bc5cdd009489"
+    },
+    "vendor/etc/sensors/config/lanai_qrdv2_ak991x_0.json": {
+      "source": "vendor/etc/sensors/config/lanai_qrdv2_ak991x_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_qrdv2_ak991x_0.json",
+      "size": 2916,
+      "sha256": "94c7ebd4c03462221762dfc184c6252d196723cdc7d8a978193987d2a73b83a8"
+    },
+    "vendor/etc/sensors/config/lanai_qsh_ble_0.json": {
+      "source": "vendor/etc/sensors/config/lanai_qsh_ble_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_qsh_ble_0.json",
+      "size": 398,
+      "sha256": "7ad1243faa2c12e54dabdb133aac073f992eb481ed2dc77da90587fdefffdb7a"
+    },
+    "vendor/etc/sensors/config/lanai_sht4x_0.json": {
+      "source": "vendor/etc/sensors/config/lanai_sht4x_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_sht4x_0.json",
+      "size": 3762,
+      "sha256": "76c60d743a36b72b6967b2e3eb9a846ca4c975b93c8a956a253ad106d7f52624"
+    },
+    "vendor/etc/sensors/config/lanai_sx932x_0.json": {
+      "source": "vendor/etc/sensors/config/lanai_sx932x_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_sx932x_0.json",
+      "size": 7886,
+      "sha256": "41221824849fbc4bfbd843a75f9ea2791a4a2e43cf2c0d8d6fc72105fd40c3a6"
+    },
+    "vendor/etc/sensors/config/lanai_tcs3408_0.json": {
+      "source": "vendor/etc/sensors/config/lanai_tcs3408_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_tcs3408_0.json",
+      "size": 4998,
+      "sha256": "e37ada6fb15a3b12a09ab2b33f707aea7e6573db6d9e9eced3e47f83ef2be87c"
+    },
+    "vendor/etc/sensors/config/lanai_tmd2755_0.json": {
+      "source": "vendor/etc/sensors/config/lanai_tmd2755_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_tmd2755_0.json",
+      "size": 7218,
+      "sha256": "438165ca0dd24883efbf0eeb82c3ea4e2e8f5fdf9ce15ca3b8d3410f5113d46e"
+    },
+    "vendor/etc/sensors/config/lanai_vertigo_ak991x_0.json": {
+      "source": "vendor/etc/sensors/config/lanai_vertigo_ak991x_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_vertigo_ak991x_0.json",
+      "size": 402,
+      "sha256": "b58ac8024e2f2e0d1e63994b2787da3898337e3c84a2acea8c2b056a8c3aeb1a"
+    },
+    "vendor/etc/sensors/config/lanai_vertigo_lsm6dsv_0.json": {
+      "source": "vendor/etc/sensors/config/lanai_vertigo_lsm6dsv_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_vertigo_lsm6dsv_0.json",
+      "size": 394,
+      "sha256": "cde1db5abfa0cb464d0abc253b6cf59c8ba77cbde4848c52b777cb1416098ce6"
+    },
+    "vendor/etc/sensors/config/lanai_vertigo_lsm6dsv_1.json": {
+      "source": "vendor/etc/sensors/config/lanai_vertigo_lsm6dsv_1.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/lanai_vertigo_lsm6dsv_1.json",
+      "size": 394,
+      "sha256": "114db5381ce2893dff307db62b0cfbbd457b06e711987c9581f5b623a34938e0"
+    },
+    "vendor/etc/sensors/config/palawan_default_sensors.json": {
+      "source": "vendor/etc/sensors/config/palawan_default_sensors.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/palawan_default_sensors.json",
+      "size": 5927,
+      "sha256": "24971e606e6225a427586cc17b8b39938d5c9280d676f632122b573da274d57b"
+    },
+    "vendor/etc/sensors/config/palawan_dynamic_sensors.json": {
+      "source": "vendor/etc/sensors/config/palawan_dynamic_sensors.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/palawan_dynamic_sensors.json",
+      "size": 927,
+      "sha256": "d49b7120b7b67ea1200ff27f47255570150d9759a79f77b575703278a77576bc"
+    },
+    "vendor/etc/sensors/config/palawan_fcal_mmc56x3x_0.json": {
+      "source": "vendor/etc/sensors/config/palawan_fcal_mmc56x3x_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/palawan_fcal_mmc56x3x_0.json",
+      "size": 2699,
+      "sha256": "1eabaa1b9d761fa7fc49df4f5a3ccfb44fbf566490506239b57788c2242b66f1"
+    },
+    "vendor/etc/sensors/config/palawan_irq.json": {
+      "source": "vendor/etc/sensors/config/palawan_irq.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/palawan_irq.json",
+      "size": 165,
+      "sha256": "f15b615651d3512274d32075bed2d69809f546e9c135f6ce578d6aa2eec3b1a3"
+    },
+    "vendor/etc/sensors/config/palawan_lsm6dso_0.json": {
+      "source": "vendor/etc/sensors/config/palawan_lsm6dso_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/palawan_lsm6dso_0.json",
+      "size": 2692,
+      "sha256": "541e2319c943cd43970522bdbe2b0d8897abcd55dbe75774800d398cbf398a91"
+    },
+    "vendor/etc/sensors/config/palawan_lsm6dso_1.json": {
+      "source": "vendor/etc/sensors/config/palawan_lsm6dso_1.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/palawan_lsm6dso_1.json",
+      "size": 2692,
+      "sha256": "611d177c8e7c2803abda29e901a4f0c91582d3a7abd118cefaa19edfbcb0c3ca"
+    },
+    "vendor/etc/sensors/config/palawan_mtp_mmc56x3x_0.json": {
+      "source": "vendor/etc/sensors/config/palawan_mtp_mmc56x3x_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/palawan_mtp_mmc56x3x_0.json",
+      "size": 412,
+      "sha256": "04cf2b406684d44958744eface9e20578c7e6e51ece77329c3b68b6c8dd6c721"
+    },
+    "vendor/etc/sensors/config/palawan_power_0.json": {
+      "source": "vendor/etc/sensors/config/palawan_power_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/palawan_power_0.json",
+      "size": 731,
+      "sha256": "fb23e580ad14d1e6b9504ff366c989473c7f6500645c66739b3b494fd11a77d8"
+    },
+    "vendor/etc/sensors/config/palawan_qrd_mmc56x3x_0.json": {
+      "source": "vendor/etc/sensors/config/palawan_qrd_mmc56x3x_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/palawan_qrd_mmc56x3x_0.json",
+      "size": 2961,
+      "sha256": "896adc58c0bb72947b48c631d4136ed4848eb88d72e8ba1fdca6efd0f2ccfdd8"
+    },
+    "vendor/etc/sensors/config/palawan_qrd_tmd2755_0.json": {
+      "source": "vendor/etc/sensors/config/palawan_qrd_tmd2755_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/palawan_qrd_tmd2755_0.json",
+      "size": 7212,
+      "sha256": "030de64a9e29a8d19b62783c04d31241789c96cf2f7c0a4e14e776dfa3d5f511"
+    },
+    "vendor/etc/sensors/config/palawan_qsh_ble_0.json": {
+      "source": "vendor/etc/sensors/config/palawan_qsh_ble_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/palawan_qsh_ble_0.json",
+      "size": 398,
+      "sha256": "1b3fa1ea44c4b35d7f466b612f7f11cdea9883f1251ae5e440643a18e06f3124"
+    },
+    "vendor/etc/sensors/config/palawan_sx932x_0.json": {
+      "source": "vendor/etc/sensors/config/palawan_sx932x_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/palawan_sx932x_0.json",
+      "size": 7901,
+      "sha256": "e39b4cf1afcba7c0b194d66f41af80dd19161f58651a890ff09bdeba815cf461"
+    },
+    "vendor/etc/sensors/config/palawan_tmd2755_0.json": {
+      "source": "vendor/etc/sensors/config/palawan_tmd2755_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/palawan_tmd2755_0.json",
+      "size": 7235,
+      "sha256": "80f5340a6cee33389a42b54e5b02bd33e26266f8be4f678643cfc6591d86c182"
+    },
+    "vendor/etc/sensors/config/palawan_vertigo_lsm6dso_0.json": {
+      "source": "vendor/etc/sensors/config/palawan_vertigo_lsm6dso_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/palawan_vertigo_lsm6dso_0.json",
+      "size": 408,
+      "sha256": "7f393588486c601b6f2e0d0cf29029275069dce6c68151752eb7f17169fd465e"
+    },
+    "vendor/etc/sensors/config/palawan_vertigo_lsm6dso_1.json": {
+      "source": "vendor/etc/sensors/config/palawan_vertigo_lsm6dso_1.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/palawan_vertigo_lsm6dso_1.json",
+      "size": 408,
+      "sha256": "f8bfc6c43e675112c4b10bfc70d655121cb59e1c885eac63af10d5d01ebbb54d"
+    },
+    "vendor/etc/sensors/config/palawan_vertigo_mmc56x3x_0.json": {
+      "source": "vendor/etc/sensors/config/palawan_vertigo_mmc56x3x_0.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/palawan_vertigo_mmc56x3x_0.json",
+      "size": 423,
+      "sha256": "07d58226ad1505edc552fddf643e49b52fc2d8c2633697cea4de6ac603970015"
+    },
+    "vendor/etc/sensors/config/qsh_ble.json": {
+      "source": "vendor/etc/sensors/config/qsh_ble.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/qsh_ble.json",
+      "size": 1076,
+      "sha256": "5a4e1729b06df36b6c27339a270012b3f088df292113ca9fe6d749c7f6c17cc1"
+    },
+    "vendor/etc/sensors/config/qsh_camera_common.json": {
+      "source": "vendor/etc/sensors/config/qsh_camera_common.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/qsh_camera_common.json",
+      "size": 2770,
+      "sha256": "015b8f2ea43d2bd0d45b5ca62e2e3081888e9e9e1f07209d35fe3fa3f13ea456"
+    },
+    "vendor/etc/sensors/config/qsh_camera_imx688_4.json": {
+      "source": "vendor/etc/sensors/config/qsh_camera_imx688_4.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/qsh_camera_imx688_4.json",
+      "size": 8152,
+      "sha256": "44be73a5ec1ed26ccf21ebfdf63e07359081c2a9ae20cfe9a83966634dfb9d86"
+    },
+    "vendor/etc/sensors/config/qsh_camera_imx688_4_sm8635.json": {
+      "source": "vendor/etc/sensors/config/qsh_camera_imx688_4_sm8635.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/qsh_camera_imx688_4_sm8635.json",
+      "size": 8136,
+      "sha256": "7747beea9aca2856fc337f3ee2d4b3a4f60eac399970707fcb1efc849b954b6a"
+    },
+    "vendor/etc/sensors/config/qsh_camera_imx688_6.json": {
+      "source": "vendor/etc/sensors/config/qsh_camera_imx688_6.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/qsh_camera_imx688_6.json",
+      "size": 8150,
+      "sha256": "6797d01f652d990f0b9b9efffefce8c2df6c4aaef20c195cd344aafc9e3fa3dd"
+    },
+    "vendor/etc/sensors/config/qsh_camera_imx688_6_actuator.json": {
+      "source": "vendor/etc/sensors/config/qsh_camera_imx688_6_actuator.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/qsh_camera_imx688_6_actuator.json",
+      "size": 1876,
+      "sha256": "8f9a0454380ad19f5b37d43ba7f80ae0d43a17f64c3833c78fa79880303617d8"
+    },
+    "vendor/etc/sensors/config/sns_amd.json": {
+      "source": "vendor/etc/sensors/config/sns_amd.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_amd.json",
+      "size": 562,
+      "sha256": "ce690c7da567ef031109ba66f22ab7d014491eda9b1035221e37f1e6b069326b"
+    },
+    "vendor/etc/sensors/config/sns_amd_sw_enabled.json": {
+      "source": "vendor/etc/sensors/config/sns_amd_sw_enabled.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_amd_sw_enabled.json",
+      "size": 574,
+      "sha256": "b02c56aa4397710b8b7a2f7499a624a1e1b7b79b188cbd7a8c57a4204e47e04b"
+    },
+    "vendor/etc/sensors/config/sns_aont.json": {
+      "source": "vendor/etc/sensors/config/sns_aont.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_aont.json",
+      "size": 141,
+      "sha256": "e5351978635f9346f2ba934dc18f7fc5f216916a072164414dfe26cf24e07399"
+    },
+    "vendor/etc/sensors/config/sns_basic_gestures.json": {
+      "source": "vendor/etc/sensors/config/sns_basic_gestures.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_basic_gestures.json",
+      "size": 1182,
+      "sha256": "5d390ca97dbd1a4589421a865c783436bbe492b27fb5cf25afbc1e8eb3fe1a25"
+    },
+    "vendor/etc/sensors/config/sns_bring_to_ear.json": {
+      "source": "vendor/etc/sensors/config/sns_bring_to_ear.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_bring_to_ear.json",
+      "size": 1188,
+      "sha256": "ca8822ee2cde871b535292e4111373c7dc20148c42d355c149e6e0b89055f27d"
+    },
+    "vendor/etc/sensors/config/sns_ccd_v1_0_amd.json": {
+      "source": "vendor/etc/sensors/config/sns_ccd_v1_0_amd.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_ccd_v1_0_amd.json",
+      "size": 356,
+      "sha256": "ce5bae2a9f229ada77c8f43afd06cc4f6999e2dc2283ba7e695da68528acfa18"
+    },
+    "vendor/etc/sensors/config/sns_ccd_v1_0_ttw.json": {
+      "source": "vendor/etc/sensors/config/sns_ccd_v1_0_ttw.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_ccd_v1_0_ttw.json",
+      "size": 6124,
+      "sha256": "1fa8402e133dcbe9827f0a8656e0f585cc9a4961d4dd0002ddc15b4a0d162216"
+    },
+    "vendor/etc/sensors/config/sns_ccd_v2_0_walk.json": {
+      "source": "vendor/etc/sensors/config/sns_ccd_v2_0_walk.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_ccd_v2_0_walk.json",
+      "size": 449,
+      "sha256": "f89666b28aacc8b0cc54168b977e51ec60286d1c1a521a1db7d845506997af7a"
+    },
+    "vendor/etc/sensors/config/sns_ccd_v3_0_walk.json": {
+      "source": "vendor/etc/sensors/config/sns_ccd_v3_0_walk.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_ccd_v3_0_walk.json",
+      "size": 1229,
+      "sha256": "af9dbd52ab89f95a839d46a98059fd11bc11e5681095984dbfcbd41e693c7bf0"
+    },
+    "vendor/etc/sensors/config/sns_ccd_v3_1_walk.json": {
+      "source": "vendor/etc/sensors/config/sns_ccd_v3_1_walk.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_ccd_v3_1_walk.json",
+      "size": 1288,
+      "sha256": "6223c3aec2cde0fff7ab500071976041acf5146ef5074060bc50fe64598c7e47"
+    },
+    "vendor/etc/sensors/config/sns_ccd_v4_0_sensors.json": {
+      "source": "vendor/etc/sensors/config/sns_ccd_v4_0_sensors.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_ccd_v4_0_sensors.json",
+      "size": 1128,
+      "sha256": "1cf6acde8ac19b036325adaf3a74efb5079754da52684528a1e1d2ff30cf9b9e"
+    },
+    "vendor/etc/sensors/config/sns_ccd_v4_0_te_cd_regs.json": {
+      "source": "vendor/etc/sensors/config/sns_ccd_v4_0_te_cd_regs.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_ccd_v4_0_te_cd_regs.json",
+      "size": 1617,
+      "sha256": "4969c5386dae12ddb076a4630703720fe346a3ccea62671b6e00e5b995fd9918"
+    },
+    "vendor/etc/sensors/config/sns_ccd_v5.json": {
+      "source": "vendor/etc/sensors/config/sns_ccd_v5.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_ccd_v5.json",
+      "size": 1649,
+      "sha256": "87ab732e701961f4ee317cdf089151ddf13d35aa3287d6959039df3137653c25"
+    },
+    "vendor/etc/sensors/config/sns_ccd_v5_0_te_cd_regs.json": {
+      "source": "vendor/etc/sensors/config/sns_ccd_v5_0_te_cd_regs.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_ccd_v5_0_te_cd_regs.json",
+      "size": 1985,
+      "sha256": "e56a8731457b1f905de8f33437f7c60f84e88427ae2c06c0b25a28bdb921a26e"
+    },
+    "vendor/etc/sensors/config/sns_ccd_v5_1_te_cd_regs.json": {
+      "source": "vendor/etc/sensors/config/sns_ccd_v5_1_te_cd_regs.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_ccd_v5_1_te_cd_regs.json",
+      "size": 3093,
+      "sha256": "44efdcae67b58787e5ec1833ae3494aa0b93fd0edd25e87044a1a0d185def67e"
+    },
+    "vendor/etc/sensors/config/sns_cm.json": {
+      "source": "vendor/etc/sensors/config/sns_cm.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_cm.json",
+      "size": 552,
+      "sha256": "6d4ab31b0b2bd3cf5963fcbac8af89f547c3e2034e365ceaa5ef2d9a45b78a59"
+    },
+    "vendor/etc/sensors/config/sns_dae.json": {
+      "source": "vendor/etc/sensors/config/sns_dae.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_dae.json",
+      "size": 886,
+      "sha256": "be07f51ccc8d5b52a93b3981143be25248e671381dd7658dc4add495b4d17d06"
+    },
+    "vendor/etc/sensors/config/sns_device_orient.json": {
+      "source": "vendor/etc/sensors/config/sns_device_orient.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_device_orient.json",
+      "size": 1008,
+      "sha256": "ac78a630941a4ab81270ea56713f0aec723f307a2ffee8589b3e092f0ecdb529"
+    },
+    "vendor/etc/sensors/config/sns_diag_filter.json": {
+      "source": "vendor/etc/sensors/config/sns_diag_filter.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_diag_filter.json",
+      "size": 6894,
+      "sha256": "66c19d91f143ae74d9c3a339537a96e98c16c94caa3a0ecdb5fcfa05573185e8"
+    },
+    "vendor/etc/sensors/config/sns_direct_channel.json": {
+      "source": "vendor/etc/sensors/config/sns_direct_channel.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_direct_channel.json",
+      "size": 164,
+      "sha256": "4a6c1821edfb7b449edef4bf077f35920579f22af903d6512a4f858b364b33f6"
+    },
+    "vendor/etc/sensors/config/sns_distance_bound.json": {
+      "source": "vendor/etc/sensors/config/sns_distance_bound.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_distance_bound.json",
+      "size": 938,
+      "sha256": "6f214d7c6317f06b412e7a6fd388bc0c7db9e50dc3bd4f2a8670af1eea421286"
+    },
+    "vendor/etc/sensors/config/sns_dpc.json": {
+      "source": "vendor/etc/sensors/config/sns_dpc.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_dpc.json",
+      "size": 727,
+      "sha256": "29a2ec3d786b42cb10ca5a426730b65f012f8698b810b4dc0733b27ed0f6a8dc"
+    },
+    "vendor/etc/sensors/config/sns_facing.json": {
+      "source": "vendor/etc/sensors/config/sns_facing.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_facing.json",
+      "size": 881,
+      "sha256": "8bbdd1d228072e66f9ff522f9eef4d256dde36f562f025b873023e5a9202e70f"
+    },
+    "vendor/etc/sensors/config/sns_flight_md.json": {
+      "source": "vendor/etc/sensors/config/sns_flight_md.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_flight_md.json",
+      "size": 566,
+      "sha256": "fee9754c643a912b8a260fb322dc3e5edae269560470c2ddc1b0e93723377aea"
+    },
+    "vendor/etc/sensors/config/sns_fmv.json": {
+      "source": "vendor/etc/sensors/config/sns_fmv.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_fmv.json",
+      "size": 1497,
+      "sha256": "ec05c6f3f33245ffbd91e6fefb96087e75e0fdfaa19dc8ec4d483e10fdb21a9b"
+    },
+    "vendor/etc/sensors/config/sns_fmv_legacy.json": {
+      "source": "vendor/etc/sensors/config/sns_fmv_legacy.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_fmv_legacy.json",
+      "size": 1583,
+      "sha256": "6453974dac7abc5fbcbc4b2c440610622af51006466ba5642cddcd07eb4f9df0"
+    },
+    "vendor/etc/sensors/config/sns_gyro_cal.json": {
+      "source": "vendor/etc/sensors/config/sns_gyro_cal.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_gyro_cal.json",
+      "size": 706,
+      "sha256": "ad6ff69702cc94bde266dbfcd201d124ee654e9e9ff14a53ee21cdd284304ffc"
+    },
+    "vendor/etc/sensors/config/sns_heart_rate.json": {
+      "source": "vendor/etc/sensors/config/sns_heart_rate.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_heart_rate.json",
+      "size": 3593,
+      "sha256": "05cb7058ab63d2c8a35ae653fbc86041902d39bea94fe782cc7f9616fba60abb"
+    },
+    "vendor/etc/sensors/config/sns_mag_cal.json": {
+      "source": "vendor/etc/sensors/config/sns_mag_cal.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_mag_cal.json",
+      "size": 476,
+      "sha256": "0db5808df890ac08cdd4062accca8607c8bed6d83c455d2033f675662d7fa0d5"
+    },
+    "vendor/etc/sensors/config/sns_mag_cal_legacy.json": {
+      "source": "vendor/etc/sensors/config/sns_mag_cal_legacy.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_mag_cal_legacy.json",
+      "size": 313,
+      "sha256": "5963da9915cd35aa4f66a639bd0fdda24fb8f53c781557514d8d8a363058e8b3"
+    },
+    "vendor/etc/sensors/config/sns_multishake.json": {
+      "source": "vendor/etc/sensors/config/sns_multishake.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_multishake.json",
+      "size": 862,
+      "sha256": "0c46f27bbdd0990839d5ca91f5423cd53d1fd37e50bcfd5e91c00d21f543eaab"
+    },
+    "vendor/etc/sensors/config/sns_offbody_detect_phone.json": {
+      "source": "vendor/etc/sensors/config/sns_offbody_detect_phone.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_offbody_detect_phone.json",
+      "size": 173,
+      "sha256": "22c2fe309e4cf8e30931a70d96f9db3ea6b1c133fc73e58d156dd7688b3ce11f"
+    },
+    "vendor/etc/sensors/config/sns_pedometer.json": {
+      "source": "vendor/etc/sensors/config/sns_pedometer.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_pedometer.json",
+      "size": 875,
+      "sha256": "ab3e7dd0322dfe98e7bba67c5d55ff10201965dfe798e4c3875fb3ebb55e5daa"
+    },
+    "vendor/etc/sensors/config/sns_psd_disable.json": {
+      "source": "vendor/etc/sensors/config/sns_psd_disable.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_psd_disable.json",
+      "size": 295,
+      "sha256": "42b38dcd810f45d29f1a4583818e4eb88126384ff0f447c498add59ff5e185a2"
+    },
+    "vendor/etc/sensors/config/sns_psd_enable.json": {
+      "source": "vendor/etc/sensors/config/sns_psd_enable.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_psd_enable.json",
+      "size": 348,
+      "sha256": "e59376563b27a4fae8783e3096090c4977010db66b3845145a720957b1efc9f1"
+    },
+    "vendor/etc/sensors/config/sns_rmd.json": {
+      "source": "vendor/etc/sensors/config/sns_rmd.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_rmd.json",
+      "size": 653,
+      "sha256": "e3f049389de52cfef0e23492ead2d090343f0c3fafa6b528504d7a81cb4cc1c3"
+    },
+    "vendor/etc/sensors/config/sns_rotv.json": {
+      "source": "vendor/etc/sensors/config/sns_rotv.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_rotv.json",
+      "size": 609,
+      "sha256": "78215f6b8ab2f7c62ab42ce0946b83a5e97e8739383d99fc2c1b127154d5b99f"
+    },
+    "vendor/etc/sensors/config/sns_smd.json": {
+      "source": "vendor/etc/sensors/config/sns_smd.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_smd.json",
+      "size": 1111,
+      "sha256": "15ed0ec4cf6bdb956d979305c4fa347ec0ea9699521132b999834e883ec1521e"
+    },
+    "vendor/etc/sensors/config/sns_tilt.json": {
+      "source": "vendor/etc/sensors/config/sns_tilt.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_tilt.json",
+      "size": 600,
+      "sha256": "649247e6559682fc2a5dd02fb17b0bf90e30d799fcdb9305a2598f94136b79c3"
+    },
+    "vendor/etc/sensors/config/sns_tilt_sw_enabled.json": {
+      "source": "vendor/etc/sensors/config/sns_tilt_sw_enabled.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_tilt_sw_enabled.json",
+      "size": 536,
+      "sha256": "53b218f3425a0ba64eb5111347434e34411e4994ae08e0fb7aa0748c3e6fb4cd"
+    },
+    "vendor/etc/sensors/config/sns_tilt_to_wake.json": {
+      "source": "vendor/etc/sensors/config/sns_tilt_to_wake.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_tilt_to_wake.json",
+      "size": 1364,
+      "sha256": "94b2dc1adc66df7230fa0ac6a5052907e55ca4ad59c4dbdbbda06e5decfe9779"
+    },
+    "vendor/etc/sensors/config/sns_transport_ppe.json": {
+      "source": "vendor/etc/sensors/config/sns_transport_ppe.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_transport_ppe.json",
+      "size": 432,
+      "sha256": "66f86daab35c70d5675adae5070bf4ca64cfc0d067b55807faf02b5068fbf914"
+    },
+    "vendor/etc/sensors/config/sns_wrist_pedo.json": {
+      "source": "vendor/etc/sensors/config/sns_wrist_pedo.json",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/config/sns_wrist_pedo.json",
+      "size": 653,
+      "sha256": "96f7e5b4bfc7800b6b347736bd529a49d941b3e2f6c0dbf49f5412dd5f1eba98"
+    },
+    "vendor/lib/rfsa/adsp/libDspIOProxy_skel.so": {
+      "source": "vendor/lib/rfsa/adsp/libDspIOProxy_skel.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libDspIOProxy_skel.so",
+      "size": 29928,
+      "sha256": "4bbd322831545667ce307b084061c8e804b561012be775b9f897ce8948051fbf"
+    },
+    "vendor/lib/rfsa/adsp/libQnnHtpV75.so": {
+      "source": "vendor/lib/rfsa/adsp/libQnnHtpV75.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libQnnHtpV75.so",
+      "size": 12725276,
+      "sha256": "e35ec79e149a14071bd5587230a65e55959dc042316f83bf3cf5e19fc888eb40"
+    },
+    "vendor/lib/rfsa/adsp/libQnnHtpV75Skel.so": {
+      "source": "vendor/lib/rfsa/adsp/libQnnHtpV75Skel.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libQnnHtpV75Skel.so",
+      "size": 12046348,
+      "sha256": "2215f369e1b640cddfadf9fa3970f52f6f245b6dc0f676bab428b8627a5ea9ea"
+    },
+    "vendor/lib/rfsa/adsp/libadsp_jpege_skel.so": {
+      "source": "vendor/lib/rfsa/adsp/libadsp_jpege_skel.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libadsp_jpege_skel.so",
+      "size": 122120,
+      "sha256": "8370eb3605389a26e7b2c0aa459c4c7a1c2e72749f9b6d12c34749eb06c3b2ab"
+    },
+    "vendor/lib/rfsa/adsp/libarc_htp_driver_skel.so": {
+      "source": "vendor/lib/rfsa/adsp/libarc_htp_driver_skel.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libarc_htp_driver_skel.so",
+      "size": 60984,
+      "sha256": "e6c180acd23b1705ac5cc8c1a70aadcbdba9b9f1f1fa8771e2882cf2bca4ad39"
+    },
+    "vendor/lib/rfsa/adsp/libbitml_nsp_skel.so": {
+      "source": "vendor/lib/rfsa/adsp/libbitml_nsp_skel.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libbitml_nsp_skel.so",
+      "size": 3998416,
+      "sha256": "5945fced0c7f24f7b5cee350c9bf9a12e02431d4d67729a519e0bbf8136e56b4"
+    },
+    "vendor/lib/rfsa/adsp/libdsp_streamer_binning.so": {
+      "source": "vendor/lib/rfsa/adsp/libdsp_streamer_binning.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libdsp_streamer_binning.so",
+      "size": 20736,
+      "sha256": "1e0331b35304832794904ebed2d62ffac4e31275cf74590147cdac4f4a786678"
+    },
+    "vendor/lib/rfsa/adsp/libdsp_streamer_qvrcam_receiver.so": {
+      "source": "vendor/lib/rfsa/adsp/libdsp_streamer_qvrcam_receiver.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libdsp_streamer_qvrcam_receiver.so",
+      "size": 21053,
+      "sha256": "95df2850036ddea9832d0651a6f9f9f7a4de42ca8680561b02e5b3e7b314428d"
+    },
+    "vendor/lib/rfsa/adsp/libeye_tracking_dsp_sample_skel.so": {
+      "source": "vendor/lib/rfsa/adsp/libeye_tracking_dsp_sample_skel.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libeye_tracking_dsp_sample_skel.so",
+      "size": 29208,
+      "sha256": "24eddc92c28267cfa9d20ead574074893fdad4389aebf9af74f75a27c5137e22"
+    },
+    "vendor/lib/rfsa/adsp/libhalide_hexagon_remote_skel.so": {
+      "source": "vendor/lib/rfsa/adsp/libhalide_hexagon_remote_skel.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libhalide_hexagon_remote_skel.so",
+      "size": 55370,
+      "sha256": "c74918cd845dcb3d81298b05f628cb103bb10beea1284d0625181954ac44f933"
+    },
+    "vendor/lib/rfsa/adsp/libmctfengine_skel.so": {
+      "source": "vendor/lib/rfsa/adsp/libmctfengine_skel.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libmctfengine_skel.so",
+      "size": 91336,
+      "sha256": "18a3d2ac55df74a26ff51d5c58bb4a3d3f0205f34bf372f60828b450e396bb1c"
+    },
+    "vendor/lib/rfsa/adsp/libmlawbpostproc_dsp_skel.so": {
+      "source": "vendor/lib/rfsa/adsp/libmlawbpostproc_dsp_skel.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libmlawbpostproc_dsp_skel.so",
+      "size": 46240,
+      "sha256": "e88a744f9be585afdfb69bbb3d9322710314559a49faf97b0f7a6e23d5581e95"
+    },
+    "vendor/lib/rfsa/adsp/libqvr_3dof_tracker_skel.so": {
+      "source": "vendor/lib/rfsa/adsp/libqvr_3dof_tracker_skel.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libqvr_3dof_tracker_skel.so",
+      "size": 38148,
+      "sha256": "decc8e163ca094489bf6a2729a47b81a9a44e63c9d466a9b9d1cda8b8c888c65"
+    },
+    "vendor/lib/rfsa/adsp/libqvr_cam_dsp_driver_skel.so": {
+      "source": "vendor/lib/rfsa/adsp/libqvr_cam_dsp_driver_skel.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libqvr_cam_dsp_driver_skel.so",
+      "size": 100741,
+      "sha256": "e7c143d708627a7aae2163d37e226494ca2bf1618ac9eca72229359443347338"
+    },
+    "vendor/lib/rfsa/adsp/libqvr_dsp_driver_skel.so": {
+      "source": "vendor/lib/rfsa/adsp/libqvr_dsp_driver_skel.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libqvr_dsp_driver_skel.so",
+      "size": 127736,
+      "sha256": "a4edbb833b64197f694270f6643c64b803cba12bd7bc03570e052c86b2bf71d0"
+    },
+    "vendor/lib/rfsa/adsp/libtracker_6dof_skel_8450.so": {
+      "source": "vendor/lib/rfsa/adsp/libtracker_6dof_skel_8450.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libtracker_6dof_skel_8450.so",
+      "size": 31295312,
+      "sha256": "8a314ba368a7c25a54ff0156caaaf737587d3d7484bdd34b7ddbd98a895fd9c9"
+    },
+    "dspso.bin:adsp/AudioSphereModule.so.1": {
+      "source": "dspso.bin:adsp/AudioSphereModule.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/AudioSphereModule.so.1",
+      "size": 80792,
+      "sha256": "e80fd043a91349bc1664d24bc980f193b8960259b899f985587049b2590a5e1e"
+    },
+    "dspso.bin:adsp/CFCM.so.1": {
+      "source": "dspso.bin:adsp/CFCM.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/CFCM.so.1",
+      "size": 31888,
+      "sha256": "a5356949d7ef1abe0eb7f6fe3226b69b574c59b499f974c93ed690a21b5e6a02"
+    },
+    "dspso.bin:adsp/SAPlusCmnModule.so.1": {
+      "source": "dspso.bin:adsp/SAPlusCmnModule.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/SAPlusCmnModule.so.1",
+      "size": 125528,
+      "sha256": "cb601516d6afaebe7a707d000f56306c34cc13079c8da6e25a2880bfe58db2d0"
+    },
+    "dspso.bin:adsp/aac_dec_module.so.1": {
+      "source": "dspso.bin:adsp/aac_dec_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/aac_dec_module.so.1",
+      "size": 271800,
+      "sha256": "0d37cd33bad4b04e76d17d5ef14fce2b9b3d5ae25cbe6a649cabef5f93c4ff69"
+    },
+    "dspso.bin:adsp/aac_enc_etsi_module.so.1": {
+      "source": "dspso.bin:adsp/aac_enc_etsi_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/aac_enc_etsi_module.so.1",
+      "size": 211104,
+      "sha256": "97797dfd195b61b1f80a0b0ec51b670802e87e58e58fa04d5f47cfc75f3bda53"
+    },
+    "dspso.bin:adsp/alac_dec_module.so.1": {
+      "source": "dspso.bin:adsp/alac_dec_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/alac_dec_module.so.1",
+      "size": 31600,
+      "sha256": "3dbb8512c1d0f9a5d017601d04ab3229fa6d2a437afa11d6c9e8aeb8b205123f"
+    },
+    "dspso.bin:adsp/amrwbplus_dec_module.so.1": {
+      "source": "dspso.bin:adsp/amrwbplus_dec_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/amrwbplus_dec_module.so.1",
+      "size": 178432,
+      "sha256": "75bd8b27496053e20e5f291b856c12cc03520adb9d364693d3d13afa86b032d8"
+    },
+    "dspso.bin:adsp/ans_module.so.1": {
+      "source": "dspso.bin:adsp/ans_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/ans_module.so.1",
+      "size": 186680,
+      "sha256": "54b8249c3798828d4a0cb60e80ac45fb9c7b72c0c225c9fe26c8be2c90e803c6"
+    },
+    "dspso.bin:adsp/ape_dec_module.so.1": {
+      "source": "dspso.bin:adsp/ape_dec_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/ape_dec_module.so.1",
+      "size": 48920,
+      "sha256": "3b2daec604bcfe8559439557ebccdf4ebb601766f1cb36024aa26c1b9a2871cf"
+    },
+    "dspso.bin:adsp/aptx_adaptive_enc_module.so.1": {
+      "source": "dspso.bin:adsp/aptx_adaptive_enc_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/aptx_adaptive_enc_module.so.1",
+      "size": 175984,
+      "sha256": "c477a5f48b7c2533281f822015021a5bd6763b1528d8de2f23ddd8d45b4a6f96"
+    },
+    "dspso.bin:adsp/aptx_adaptive_speech_dec_module.so.1": {
+      "source": "dspso.bin:adsp/aptx_adaptive_speech_dec_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/aptx_adaptive_speech_dec_module.so.1",
+      "size": 202552,
+      "sha256": "d755a5aa7def241da0dc31e36a43889b6063c131f625df2cf10f490275c5be9d"
+    },
+    "dspso.bin:adsp/aptx_adaptive_speech_enc_module.so.1": {
+      "source": "dspso.bin:adsp/aptx_adaptive_speech_enc_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/aptx_adaptive_speech_enc_module.so.1",
+      "size": 182168,
+      "sha256": "1ff0b26e44cdffe6cdbd3890246197133a2b2428446c4d66a9bdf3ac3e127625"
+    },
+    "dspso.bin:adsp/aptx_classic_enc_module.so.1": {
+      "source": "dspso.bin:adsp/aptx_classic_enc_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/aptx_classic_enc_module.so.1",
+      "size": 41776,
+      "sha256": "6dd52be72166651903b908178fe6cad7a3848298cc718effbe42f7992ff72824"
+    },
+    "dspso.bin:adsp/aptx_hd_enc_module.so.1": {
+      "source": "dspso.bin:adsp/aptx_hd_enc_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/aptx_hd_enc_module.so.1",
+      "size": 40976,
+      "sha256": "392a7f2ef3046bf5394dd0ebc3506c4f74e834c256824dacb4327e4d8372d3fe"
+    },
+    "dspso.bin:adsp/celt_enc_module.so.1": {
+      "source": "dspso.bin:adsp/celt_enc_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/celt_enc_module.so.1",
+      "size": 89056,
+      "sha256": "a687057ccbc743ba5041a63951640bb3384d948e701d6940af990b1716b6a9f4"
+    },
+    "dspso.bin:adsp/cps_module.so.1": {
+      "source": "dspso.bin:adsp/cps_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/cps_module.so.1",
+      "size": 292184,
+      "sha256": "b74556f696258ee1d7c920799141759e28078da4d9dc9aada55bd8766717e75f"
+    },
+    "dspso.bin:adsp/fastrpc_shell_0": {
+      "source": "dspso.bin:adsp/fastrpc_shell_0",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/fastrpc_shell_0",
+      "size": 1213768,
+      "sha256": "d9bd227b84cddc29b95ac86328e127764273b38f3f32127d5b924f8ca24547ce"
+    },
+    "dspso.bin:adsp/ffecns_module_VUI_viii.so.1": {
+      "source": "dspso.bin:adsp/ffecns_module_VUI_viii.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/ffecns_module_VUI_viii.so.1",
+      "size": 402584,
+      "sha256": "a392b70a410e658e848f3b97d4f3a5105173c775fcaf8f2dbe7e7dfd762fb275"
+    },
+    "dspso.bin:adsp/flac_dec_module.so.1": {
+      "source": "dspso.bin:adsp/flac_dec_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/flac_dec_module.so.1",
+      "size": 41688,
+      "sha256": "072aeee07b4bcd41738c2959cf37bd45e954ba0545468920b697154b87f3e608"
+    },
+    "dspso.bin:adsp/fluence_bs_module_fvxiii.so.1": {
+      "source": "dspso.bin:adsp/fluence_bs_module_fvxiii.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/fluence_bs_module_fvxiii.so.1",
+      "size": 343736,
+      "sha256": "54c825ff6146bac78bec2de89638765176ed153b28409d6833b674481f89150f"
+    },
+    "dspso.bin:adsp/fluence_ef_module_fvxiii.so.1": {
+      "source": "dspso.bin:adsp/fluence_ef_module_fvxiii.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/fluence_ef_module_fvxiii.so.1",
+      "size": 504128,
+      "sha256": "95a64ab58f05596c4ef2e5e0d1081c4fbd0e889986e45fc99765e1fd63cc1cee"
+    },
+    "dspso.bin:adsp/fluence_nn_module_fvxiii.so.1": {
+      "source": "dspso.bin:adsp/fluence_nn_module_fvxiii.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/fluence_nn_module_fvxiii.so.1",
+      "size": 493792,
+      "sha256": "6a2150aa4ac55c1395ab9dd16d44f153d0decc5bb46ed7cb747360a930ab5f27"
+    },
+    "dspso.bin:adsp/fluence_pro_vc_module_fvxiii.so.1": {
+      "source": "dspso.bin:adsp/fluence_pro_vc_module_fvxiii.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/fluence_pro_vc_module_fvxiii.so.1",
+      "size": 404192,
+      "sha256": "3827cebeb25d139e9f25b0b7543e8f804e2d8d409dab9035e9b6f7c3e04de72b"
+    },
+    "dspso.bin:adsp/fluence_pro_vr_module_fvxiii.so.1": {
+      "source": "dspso.bin:adsp/fluence_pro_vr_module_fvxiii.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/fluence_pro_vr_module_fvxiii.so.1",
+      "size": 378360,
+      "sha256": "5dd8a85be6ba85009c8d2059d930bbe39b2f7d7b01ae15848058618424515490"
+    },
+    "dspso.bin:adsp/haptics_module.so.1": {
+      "source": "dspso.bin:adsp/haptics_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/haptics_module.so.1",
+      "size": 133328,
+      "sha256": "4db26394d004561bb45092f3e782a45ca28ec70738dfc35b81c596a9d4825c9a"
+    },
+    "dspso.bin:adsp/hdr_module.so.1": {
+      "source": "dspso.bin:adsp/hdr_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/hdr_module.so.1",
+      "size": 165272,
+      "sha256": "a7da852e95c252c82894172704b9a39610bdcc378196a03da6c899294027d447"
+    },
+    "dspso.bin:adsp/lc3_dec_module.so.1": {
+      "source": "dspso.bin:adsp/lc3_dec_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/lc3_dec_module.so.1",
+      "size": 188080,
+      "sha256": "7a37d4af95990a9148dcad6723597cca3379b42ef76cf9049f48d4aa11eb9c18"
+    },
+    "dspso.bin:adsp/lc3_enc_module.so.1": {
+      "source": "dspso.bin:adsp/lc3_enc_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/lc3_enc_module.so.1",
+      "size": 343376,
+      "sha256": "bdaaaeb5f7e227d6b664ab89215a75164e06e3bed821ad99ba1f5bc764bad637"
+    },
+    "dspso.bin:adsp/ldac_enc_module.so.1": {
+      "source": "dspso.bin:adsp/ldac_enc_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/ldac_enc_module.so.1",
+      "size": 81856,
+      "sha256": "fc18aaa1d4def02475ce9e74bd04c70be67b46bf82235e269d581db418929033"
+    },
+    "dspso.bin:adsp/libaptXAdaptiveEnc.so": {
+      "source": "dspso.bin:adsp/libaptXAdaptiveEnc.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libaptXAdaptiveEnc.so",
+      "size": 271424,
+      "sha256": "1ac881571cd1db4d256113d4448304016de73fedebc059824b1b2ed09599f0c9"
+    },
+    "dspso.bin:adsp/libaptXAdaptiveEnc3.so": {
+      "source": "dspso.bin:adsp/libaptXAdaptiveEnc3.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libaptXAdaptiveEnc3.so",
+      "size": 94464,
+      "sha256": "e7cdd49b664e22993bebd5902737d66f45e307b2ba0a7f31af702b4ab4661095"
+    },
+    "dspso.bin:adsp/libc++.so.1": {
+      "source": "dspso.bin:adsp/libc++.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libc++.so.1",
+      "size": 3894832,
+      "sha256": "336eae4e025a55043000c6d16e01597e1dcb7cb98cef556e7b59c56d531df80d"
+    },
+    "dspso.bin:adsp/libc++abi.so.1": {
+      "source": "dspso.bin:adsp/libc++abi.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libc++abi.so.1",
+      "size": 863928,
+      "sha256": "5d9a016741dd9a5dc67748c77164c17b8d7017de4f82f3d7843dfc9b44aa7749"
+    },
+    "dspso.bin:adsp/libeai_lpi.so": {
+      "source": "dspso.bin:adsp/libeai_lpi.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libeai_lpi.so",
+      "size": 204272,
+      "sha256": "1c6996205656c7d627079a9b87fee740766107d79a26c47381bcefe73e26d36f"
+    },
+    "dspso.bin:adsp/liblc3qDec.so": {
+      "source": "dspso.bin:adsp/liblc3qDec.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/liblc3qDec.so",
+      "size": 163040,
+      "sha256": "61580dc6e81e04563211a6c58b8451294bd244958d9b4da160ccee3a282e2ed3"
+    },
+    "dspso.bin:adsp/libsns_device_mode_skel.so": {
+      "source": "dspso.bin:adsp/libsns_device_mode_skel.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libsns_device_mode_skel.so",
+      "size": 19880,
+      "sha256": "d8065df32ff3aa2784b75433b4160dfa876ec7b15383ec301e3835d05cce6bec"
+    },
+    "dspso.bin:adsp/libsns_direct_channel_skel.so": {
+      "source": "dspso.bin:adsp/libsns_direct_channel_skel.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libsns_direct_channel_skel.so",
+      "size": 17632,
+      "sha256": "3ef8bb8ba6f63402cf0f0125dc57930f883f801cdf050fe1d50ce88b27bd005e"
+    },
+    "dspso.bin:adsp/libsns_dynamic_loader_skel.so": {
+      "source": "dspso.bin:adsp/libsns_dynamic_loader_skel.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libsns_dynamic_loader_skel.so",
+      "size": 20408,
+      "sha256": "8542e11ae32ab3b1d0f4aea5d0f730bc5b4fc32786adaf3ac33277e18fc88218"
+    },
+    "dspso.bin:adsp/libsns_remote_proc_state_skel.so": {
+      "source": "dspso.bin:adsp/libsns_remote_proc_state_skel.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libsns_remote_proc_state_skel.so",
+      "size": 19720,
+      "sha256": "c3126ead2e5b6c07b434cce12761cf22a8b9099d1fcfd6ff4ce0908f30c3bb88"
+    },
+    "dspso.bin:adsp/libstabilitydomain_skel.so": {
+      "source": "dspso.bin:adsp/libstabilitydomain_skel.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libstabilitydomain_skel.so",
+      "size": 123312,
+      "sha256": "83759908192614c6338b550560011973fbe3df477c56613330b456dd423e83f2"
+    },
+    "dspso.bin:adsp/libsysmondomain_skel.so": {
+      "source": "dspso.bin:adsp/libsysmondomain_skel.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libsysmondomain_skel.so",
+      "size": 466104,
+      "sha256": "ded35912d5b6e4c17d4294328bb32da14062657f31f9e5aac81ede4843cb3888"
+    },
+    "dspso.bin:adsp/libsysmonquery_skel.so": {
+      "source": "dspso.bin:adsp/libsysmonquery_skel.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/libsysmonquery_skel.so",
+      "size": 46472,
+      "sha256": "44cb231639bcc99db2cb6e2571e1953fac45de82495a723e7d7afc546d02199d"
+    },
+    "dspso.bin:adsp/mm_fluence_sb_module_fvxiii.so.1": {
+      "source": "dspso.bin:adsp/mm_fluence_sb_module_fvxiii.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/mm_fluence_sb_module_fvxiii.so.1",
+      "size": 445472,
+      "sha256": "3c106d40cc83a9329081b1dee0afdbfb18b1a8387a3d9c4e6376f57a9ec95a43"
+    },
+    "dspso.bin:adsp/msppv4_module.so.1": {
+      "source": "dspso.bin:adsp/msppv4_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/msppv4_module.so.1",
+      "size": 439480,
+      "sha256": "e960da81129ddceb0ac4d39f613925e4aefdb8233c0ef08b0924b6db074ff97e"
+    },
+    "dspso.bin:adsp/opus_dec_module.so.1": {
+      "source": "dspso.bin:adsp/opus_dec_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/opus_dec_module.so.1",
+      "size": 163072,
+      "sha256": "b5c3bf9bc16ab4fdbce17285eed5e545ca5bedfcc91fedb719f53bc0764a9c7e"
+    },
+    "dspso.bin:adsp/sbc_dec_module.so.1": {
+      "source": "dspso.bin:adsp/sbc_dec_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/sbc_dec_module.so.1",
+      "size": 47312,
+      "sha256": "e04debeaca8d63c65146996a19f410b5ec4ce659333c2ac07f20fe6846928cd8"
+    },
+    "dspso.bin:adsp/sbc_enc_module.so.1": {
+      "source": "dspso.bin:adsp/sbc_enc_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/sbc_enc_module.so.1",
+      "size": 40384,
+      "sha256": "1441ebce70a5757dcd4b8cd3969505fc28f05e58935472c969b99362608810f0"
+    },
+    "dspso.bin:adsp/sdd_module.so.1": {
+      "source": "dspso.bin:adsp/sdd_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/sdd_module.so.1",
+      "size": 39280,
+      "sha256": "a4abf7a89e3a26f170bcac0d550c898a62b2bde64dd82ea407de6b35d7c823ec"
+    },
+    "dspso.bin:adsp/sm_fluence_sb_module_fvxiii.so.1": {
+      "source": "dspso.bin:adsp/sm_fluence_sb_module_fvxiii.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/sm_fluence_sb_module_fvxiii.so.1",
+      "size": 288928,
+      "sha256": "2c9a98bc7c7aac3eefbb00b910f585233dd659dc7682e09ae12e161a6ac7b575"
+    },
+    "dspso.bin:adsp/smecns_v2_module_fvxiii.so.1": {
+      "source": "dspso.bin:adsp/smecns_v2_module_fvxiii.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/smecns_v2_module_fvxiii.so.1",
+      "size": 276928,
+      "sha256": "eb1c42910f08f9e49b04505033f1b0f16f919d8ece8cf13d58dd1f9df5132a4e"
+    },
+    "dspso.bin:adsp/sns_tppe.so": {
+      "source": "dspso.bin:adsp/sns_tppe.so",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/sns_tppe.so",
+      "size": 268624,
+      "sha256": "4cdfb27f1b222150f4b96d2d7f41bf39f5b03a6627e7d4fd181d01dd594f47dd"
+    },
+    "dspso.bin:adsp/spf-aptx-adaptive3-ble-enc.so.1": {
+      "source": "dspso.bin:adsp/spf-aptx-adaptive3-ble-enc.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/spf-aptx-adaptive3-ble-enc.so.1",
+      "size": 163800,
+      "sha256": "ceeb66531d4d6ce7f959e3e0c7701b14f0f433233ec903c65f9e7edd41c939cb"
+    },
+    "dspso.bin:adsp/spv5_module.so.1": {
+      "source": "dspso.bin:adsp/spv5_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/spv5_module.so.1",
+      "size": 292216,
+      "sha256": "711ba6d6c1f5b64dc41fb143780b92f0831a5baf12b8abf618ec7bc14777788d"
+    },
+    "dspso.bin:adsp/stage1_pdk_module.so.1": {
+      "source": "dspso.bin:adsp/stage1_pdk_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/stage1_pdk_module.so.1",
+      "size": 102808,
+      "sha256": "61091bdb82e28721f96b08cb9b0cb749a695c35f42586744cd928cbb74ac625d"
+    },
+    "dspso.bin:adsp/stage1_pdk_module_island.so.1": {
+      "source": "dspso.bin:adsp/stage1_pdk_module_island.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/stage1_pdk_module_island.so.1",
+      "size": 52616,
+      "sha256": "a8c80b2a62ca5008af2db89936569ebef3d3400edfd50b7f6454acc74b997729"
+    },
+    "dspso.bin:adsp/tsm_module.so.1": {
+      "source": "dspso.bin:adsp/tsm_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/tsm_module.so.1",
+      "size": 91384,
+      "sha256": "69081fba2d414b3cc3f97a732e0f3da4d5d21257579dec959c44280216965be5"
+    },
+    "dspso.bin:adsp/vorbis_dec_module.so.1": {
+      "source": "dspso.bin:adsp/vorbis_dec_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/vorbis_dec_module.so.1",
+      "size": 88000,
+      "sha256": "2021cc3cc6552412a1c78b6ac80097efd24653352efdb690a1e8f7a9ca1bc098"
+    },
+    "dspso.bin:adsp/wmapro_dec_module.so.1": {
+      "source": "dspso.bin:adsp/wmapro_dec_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/wmapro_dec_module.so.1",
+      "size": 368320,
+      "sha256": "6a5143c9fbe6f922c1eb48c7f594bfe7f0a421b099b6059bfc4d681d724c235f"
+    },
+    "dspso.bin:adsp/wmastd_dec_module.so.1": {
+      "source": "dspso.bin:adsp/wmastd_dec_module.so.1",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp/wmastd_dec_module.so.1",
+      "size": 131872,
+      "sha256": "14d55d7de40c3be52dd6fe05d10c31c8b0396c450a34b74c59abe317861418f5"
+    },
+    "sns_reg_config": {
+      "source": "vendor/etc/sensors/sns_reg_config",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/sensors/sns_reg.conf",
+      "size": 573,
+      "sha256": "94a70dbb8b9e564173210957b54494a57452da9105e27a6a910c7692e732fc3d"
+    },
+    "vendor/etc/acdbdata/pineapple_qrd/QRD_acdb_cal.acdb": {
+      "source": "vendor/etc/acdbdata/pineapple_qrd/QRD_acdb_cal.acdb",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/acdb/pineapple_qrd/QRD_acdb_cal.acdb",
+      "size": 3179370,
+      "sha256": "0fd13d210e0fd74a22d2294fb0a999f5bda27049e304501987f34bfaf8de70a8"
+    },
+    "vendor/etc/acdbdata/pineapple_qrd/QRD_workspaceFileXml.qwsp": {
+      "source": "vendor/etc/acdbdata/pineapple_qrd/QRD_workspaceFileXml.qwsp",
+      "destination": "usr/share/qcom/sm8650/Lenovo/tb520fu/acdb/pineapple_qrd/QRD_workspaceFileXml.qwsp",
+      "size": 859568,
+      "sha256": "9f12dc23ecaa7fb01842d894590ff60532f5fb467f3596f1b91ad9470e43ae88"
+    }
+  },
+  "images": {
+    "NON-HLOS.bin": {
+      "sha256": "ad31e6cc9bee38292e0859a16e9a3d85de5df5920e6fc1e7c28220ff0021aff8",
+      "size": 101707776
+    },
+    "BTFM.bin": {
+      "sha256": "0bc74591afb8dff17e626c0ac89910c9bf6fa7ee45189041863fb400d185c714",
+      "size": 1470464
+    },
+    "dspso.bin": {
+      "sha256": "5fc8d61652727315371dcab8f8d54101160b8a004f81cefeeda5a136dc1193f7",
+      "size": 67108864
     }
   }
 }

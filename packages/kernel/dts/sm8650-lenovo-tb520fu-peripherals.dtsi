@@ -1,0 +1,815 @@
+// SPDX-License-Identifier: BSD-3-Clause
+/* TB520FU peripherals: stock wiring, all runtime behaviour remains unverified. */
+/* Mainline calls physical WRAP1/WRAP2 qupv3_id_0/qupv3_id_1. */
+&qupv3_id_0 { status = "okay"; };
+&qupv3_id_1 { status = "okay"; };
+&gpi_dma1 { status = "okay"; };
+/ {
+
+	wcn7850-pmu {
+		compatible = "qcom,wcn7850-pmu";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&wlan_en>, <&bt_default>, <&wlan_sw_ctrl_default>;
+
+		wlan-enable-gpios = <&tlmm 16 GPIO_ACTIVE_HIGH>;
+		bt-enable-gpios = <&tlmm 17 GPIO_ACTIVE_HIGH>;
+
+		vdd-supply = <&vreg_s4i_0p85>;
+		vddio-supply = <&vreg_l15b_1p8>;
+		vddio1p2-supply = <&vreg_l3c_1p2>;
+		vddaon-supply = <&vreg_s2c_0p8>;
+		vdddig-supply = <&vreg_s3c_0p9>;
+		vddrfa1p2-supply = <&vreg_s1c_1p2>;
+		vddrfa1p8-supply = <&vreg_s6c_1p8>;
+
+		clocks = <&rpmhcc RPMH_RF_CLK1>;
+
+		regulators {
+			vreg_pmu_rfa_cmn: ldo0 {
+				regulator-name = "vreg_pmu_rfa_cmn";
+			};
+
+			vreg_pmu_aon_0p59: ldo1 {
+				regulator-name = "vreg_pmu_aon_0p59";
+			};
+
+			vreg_pmu_wlcx_0p8: ldo2 {
+				regulator-name = "vreg_pmu_wlcx_0p8";
+			};
+
+			vreg_pmu_wlmx_0p85: ldo3 {
+				regulator-name = "vreg_pmu_wlmx_0p85";
+			};
+
+			vreg_pmu_btcmx_0p85: ldo4 {
+				regulator-name = "vreg_pmu_btcmx_0p85";
+			};
+
+			vreg_pmu_rfa_0p8: ldo5 {
+				regulator-name = "vreg_pmu_rfa_0p8";
+			};
+
+			vreg_pmu_rfa_1p2: ldo6 {
+				regulator-name = "vreg_pmu_rfa_1p2";
+			};
+
+			vreg_pmu_rfa_1p8: ldo7 {
+				regulator-name = "vreg_pmu_rfa_1p8";
+			};
+
+			vreg_pmu_pcie_0p9: ldo8 {
+				regulator-name = "vreg_pmu_pcie_0p9";
+			};
+
+			vreg_pmu_pcie_1p8: ldo9 {
+				regulator-name = "vreg_pmu_pcie_1p8";
+			};
+		};
+	};
+
+	sound {
+		compatible = "qcom,sm8650-sndcard", "qcom,sm8450-sndcard";
+		model = "Lenovo-Yoga-TB520FU";
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&tdm1_clk_active>, <&tdm1_ws_active>,
+		<&tdm1_din_active>, <&tdm1_dout_active>;
+		pinctrl-1 = <&tdm1_clk_sleep>, <&tdm1_ws_sleep>,
+		<&tdm1_din_sleep>, <&tdm1_dout_sleep>;
+		audio-routing = "IN1_HPHL", "HPHL_OUT",
+		"IN2_HPHR", "HPHR_OUT",
+		"AMIC1", "MIC BIAS1",
+		"AMIC2", "MIC BIAS2",
+		"AMIC3", "MIC BIAS3",
+		"AMIC4", "MIC BIAS4",
+		"AMIC5", "MIC BIAS4",
+		"TX SWR_INPUT0", "ADC1_OUTPUT",
+		"TX SWR_INPUT1", "ADC2_OUTPUT",
+		"TX SWR_INPUT2", "ADC3_OUTPUT",
+		"TX SWR_INPUT3", "ADC4_OUTPUT";
+
+		wcd-playback-dai-link {
+			link-name = "WCD Playback";
+
+			cpu {
+				sound-dai = <&q6apmbedai RX_CODEC_DMA_RX_0>;
+			};
+
+			codec {
+				sound-dai = <&wcd939x 0>, <&swr1 0>, <&lpass_rxmacro 0>;
+			};
+
+			platform {
+				sound-dai = <&q6apm>;
+			};
+		};
+
+		wcd-capture-dai-link {
+			link-name = "WCD Capture";
+
+			cpu {
+				sound-dai = <&q6apmbedai TX_CODEC_DMA_TX_3>;
+			};
+
+			codec {
+				sound-dai = <&wcd939x 1>, <&swr2 1>, <&lpass_txmacro 0>;
+			};
+
+			platform {
+				sound-dai = <&q6apm>;
+			};
+		};
+
+		dp-playback-dai-link {
+			link-name = "DisplayPort Playback";
+			cpu { sound-dai = <&q6apmbedai DISPLAY_PORT_RX_0>; };
+			codec { sound-dai = <&mdss_dp0>; };
+			platform { sound-dai = <&q6apm>; };
+		};
+
+		aw-spk-dai-link {
+			link-name = "AW882xx Playback";
+
+			cpu {
+				sound-dai = <&q6apmbedai SECONDARY_TDM_RX_0>;
+			};
+
+			codec {
+				sound-dai = <&amp0>, <&amp1>, <&amp2>, <&amp3>, <&amp4>, <&amp5>;
+			};
+
+			platform {
+				sound-dai = <&q6apm>;
+			};
+		};
+	};
+
+	wcd939x: audio-codec {
+		compatible = "qcom,wcd9395-codec", "qcom,wcd9390-codec";
+
+		pinctrl-0 = <&wcd_default>;
+		pinctrl-names = "default";
+
+		qcom,micbias1-microvolt = <1800000>;
+		qcom,micbias2-microvolt = <2700000>;
+		qcom,micbias3-microvolt = <1800000>;
+		qcom,micbias4-microvolt = <1800000>;
+		qcom,mbhc-buttons-vthreshold-microvolt = <75000 150000 237000 500000 500000 500000 500000 500000>;
+		qcom,mbhc-headset-vthreshold-microvolt = <1700000>;
+		qcom,mbhc-headphone-vthreshold-microvolt = <50000>;
+		qcom,rx-device = <&wcd_rx>;
+		qcom,tx-device = <&wcd_tx>;
+
+		reset-gpios = <&tlmm 107 GPIO_ACTIVE_LOW>;
+
+		vdd-buck-supply = <&vreg_l15b_1p8>;
+		vdd-rxtx-supply = <&vreg_l15b_1p8>;
+		vdd-io-supply = <&vreg_l15b_1p8>;
+		vdd-mic-bias-supply = <&vreg_bob1>;
+
+		#sound-dai-cells = <1>;
+
+		mode-switch;
+		orientation-switch;
+
+		port {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			wcd_codec_headset_in: endpoint@0 {
+				reg = <0>;
+				remote-endpoint = <&wcd_usbss_codec>;
+			};
+		};
+	};
+
+	pmic-glink {
+		compatible = "qcom,sm8650-pmic-glink",
+		"qcom,sm8550-pmic-glink",
+		"qcom,pmic-glink";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		connector@0 {
+			compatible = "usb-c-connector";
+			reg = <0>;
+
+			power-role = "dual";
+			data-role = "dual";
+			self-powered;
+
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				port@0 {
+					reg = <0>;
+
+					pmic_glink_hs_in: endpoint {
+						remote-endpoint = <&usb_1_dwc3_hs>;
+					};
+				};
+
+				port@1 {
+					reg = <1>;
+
+					pmic_glink_ss_in: endpoint {
+						remote-endpoint = <&redriver_ss_out>;
+					};
+				};
+
+				port@2 {
+					reg = <2>;
+					#address-cells = <1>;
+					#size-cells = <0>;
+
+					pmic_glink_sbu: endpoint@0 {
+						reg = <0>;
+						remote-endpoint = <&wcd_usbss_sbu>;
+					};
+
+				};
+			};
+		};
+
+	};
+	aliases { serial1 = &uart14; i2c6 = &i2c6; i2c7 = &i2c7; };
+};
+
+&pcie0 {
+	wake-gpios = <&tlmm 96 GPIO_ACTIVE_LOW>;
+	perst-gpios = <&tlmm 94 GPIO_ACTIVE_LOW>;
+
+	pinctrl-0 = <&pcie0_default_state>;
+	pinctrl-names = "default";
+
+	status = "okay";
+};
+
+&pcieport0 {
+	wifi@0 {
+		compatible = "pci17cb,1107";
+		qcom,board-firmware = "qcom/sm8650/lenovo/tb520fu/bdwlan_row_lapis.elf";
+		reg = <0x10000 0x0 0x0 0x0 0x0>;
+
+		vddrfacmn-supply = <&vreg_pmu_rfa_cmn>;
+		vddaon-supply = <&vreg_pmu_aon_0p59>;
+		vddwlcx-supply = <&vreg_pmu_wlcx_0p8>;
+		vddwlmx-supply = <&vreg_pmu_wlmx_0p85>;
+		vddrfa0p8-supply = <&vreg_pmu_rfa_0p8>;
+		vddrfa1p2-supply = <&vreg_pmu_rfa_1p2>;
+		vddrfa1p8-supply = <&vreg_pmu_rfa_1p8>;
+		vddpcie0p9-supply = <&vreg_pmu_pcie_0p9>;
+		vddpcie1p8-supply = <&vreg_pmu_pcie_1p8>;
+	};
+};
+
+&pcie0_phy {
+	vdda-phy-supply = <&vreg_l1i_0p88>;
+	vdda-pll-supply = <&vreg_l3i_1p2>;
+
+	status = "okay";
+};
+
+&swr1 {
+	status = "okay";
+
+	/* WCD9395 RX */
+	wcd_rx: codec@0,4 {
+		compatible = "sdw20217010e00";
+		reg = <0 4>;
+
+		/*
+		* WCD9395 RX Port 1 (HPH_L/R)      <=> SWR1 Port 1 (HPH_L/R)
+		* WCD9395 RX Port 2 (CLSH)         <=> SWR1 Port 2 (CLSH)
+		* WCD9395 RX Port 3 (COMP_L/R)     <=> SWR1 Port 3 (COMP_L/R)
+		* WCD9395 RX Port 4 (LO)           <=> SWR1 Port 4 (LO)
+		* WCD9395 RX Port 5 (DSD_L/R)      <=> SWR1 Port 5 (DSD_L/R)
+		* WCD9395 RX Port 6 (HIFI_PCM_L/R) <=> SWR1 Port 9 (HIFI_PCM_L/R)
+		*/
+		qcom,rx-port-mapping = <1 2 3 4 5 9>;
+	};
+};
+
+&swr2 {
+	status = "okay";
+
+	/* WCD9395 TX */
+	wcd_tx: codec@0,3 {
+		compatible = "sdw20217010e00";
+		reg = <0 3>;
+
+		/*
+		* WCD9395 TX Port 1 (ADC1,2,3,4)         <=> SWR2 Port 2 (TX SWR_INPUT 0,1,2,3)
+		* WCD9395 TX Port 2 (ADC3,4 & DMIC0,1)   <=> SWR2 Port 2 (TX SWR_INPUT 0,1,2,3)
+		* WCD9395 TX Port 3 (DMIC0,1,2,3 & MBHC) <=> SWR2 Port 3 (TX SWR_INPUT 4,5,6,7)
+		* WCD9395 TX Port 4 (DMIC4,5,6,7)        <=> SWR2 Port 4 (TX SWR_INPUT 8,9,10,11)
+		*/
+		qcom,tx-port-mapping = <2 2 3 4>;
+	};
+};
+
+&q6apmbedai {
+	clocks = <&q6prmcc LPASS_CLK_ID_SEC_TDM_IBIT LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
+	<&q6prmcc LPASS_CLK_ID_SEC_TDM_EBIT LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
+	<&q6prmcc LPASS_CLK_ID_SEC_MI2S_IBIT LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
+	<&q6prmcc LPASS_CLK_ID_SEC_MI2S_EBIT LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
+	<&q6prmcc LPASS_HW_MACRO_VOTE LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
+	<&q6prmcc LPASS_HW_DCODEC_VOTE LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
+	clock-names = "sec-tdm-ibit",
+	"sec-tdm-ebit",
+	"sec-mi2s-ibit",
+	"sec-mi2s-ebit",
+	"lpass-macro",
+	"lpass-dcodec";
+};
+
+&usb_1 {
+	dr_mode = "otg";
+	usb-role-switch;
+	qcom,select-utmi-as-pipe-clk;
+	qcom,host-ss-powerup-quirk;
+	qcom,host-usb2-phy-reinit-quirk;
+
+	status = "okay";
+};
+
+&usb_1_dwc3_hs {
+	remote-endpoint = <&pmic_glink_hs_in>;
+};
+
+&usb_1_hsphy {
+	vdd-supply = <&vreg_l1i_0p88>;
+	vdda12-supply = <&vreg_l3i_1p2>;
+
+	phys = <&pm8550b_eusb2_repeater>;
+
+	status = "okay";
+};
+
+&usb_dp_qmpphy {
+	vdda-phy-supply = <&vreg_l3i_1p2>;
+	vdda-pll-supply = <&vreg_l3g_0p91>;
+
+	status = "okay";
+};
+
+&usb_dp_qmpphy_out {
+	remote-endpoint = <&redriver_ss_in>;
+};
+
+&remoteproc_adsp {
+	firmware-name = "qcom/sm8650/lenovo/tb520fu/adsp.mdt",
+	"qcom/sm8650/lenovo/tb520fu/adsp_dtb.mdt";
+
+	status = "okay";
+};
+
+&remoteproc_cdsp {
+	firmware-name = "qcom/sm8650/lenovo/tb520fu/cdsp.mdt",
+	"qcom/sm8650/lenovo/tb520fu/cdsp_dtb.mdt";
+
+	status = "okay";
+};
+
+&iris {
+	firmware-name = "qcom/sm8650/lenovo/tb520fu/vpu33_4v.mbn";
+	status = "okay";
+};
+&mdss_dp0 { status = "okay"; };
+&pm8550b_eusb2_repeater {
+	vdd18-supply = <&vreg_l15b_1p8>;
+	vdd3-supply = <&vreg_l5b_3p1>;
+	/* Stock overrides: IUSB2=0x0d, SQUELCH=2, PREEM=7, HSDISC=6. */
+	qcom,tune-usb2-amplitude = /bits/ 8 <0x0d>;
+	qcom,squelch-detector-bp = <(-4000)>;
+	qcom,tune-usb2-preem = /bits/ 8 <0x07>;
+	qcom,tune-usb2-disc-thres = /bits/ 8 <0x06>;
+	status = "okay";
+};
+&qup_i2c3_data_clk { bias-pull-up = <2200>; };
+&pm8550vs_c { status = "okay"; };
+&pm8550vs_d { status = "okay"; };
+&pm8550vs_e { status = "okay"; };
+&pm8550vs_g { status = "okay"; };
+&uart14 {
+	status = "okay";
+
+	bluetooth {
+		compatible = "qcom,wcn7850-bt";
+		firmware-name = "qcom/sm8650/lenovo/tb520fu/hmtnv20_Lapis.bin",
+		"qcom/sm8650/lenovo/tb520fu/hmtbtfw20.tlv";
+
+		vddrfacmn-supply = <&vreg_pmu_rfa_cmn>;
+		vddaon-supply = <&vreg_pmu_aon_0p59>;
+		vddwlcx-supply = <&vreg_pmu_wlcx_0p8>;
+		vddwlmx-supply = <&vreg_pmu_wlmx_0p85>;
+		vddrfa0p8-supply = <&vreg_pmu_rfa_0p8>;
+		vddrfa1p2-supply = <&vreg_pmu_rfa_1p2>;
+		vddrfa1p8-supply = <&vreg_pmu_rfa_1p8>;
+
+		max-speed = <3200000>;
+	};
+};
+
+&i2c6 {
+	amp0: amplifier@34 {
+		compatible = "awinic,aw882xx_smartpa";
+		reg = <0x34>;
+		#sound-dai-cells = <0>;
+		aw-cali-mode = "none";
+		aw-re-max = <30000>;
+		aw-re-min = <4000>;
+		rename-flag = <1>;
+		sound-channel = <0>;
+		sync-load = <1>;
+		one_rst_flag = <1>;
+		reset-gpio = <&tlmm 128 GPIO_ACTIVE_HIGH>;
+		firmware-name = "qcom/sm8650/lenovo/tb520fu/aw882xx_acf.bin";
+	};
+	amp4: amplifier@35 {
+		compatible = "awinic,aw882xx_smartpa";
+		reg = <0x35>;
+		#sound-dai-cells = <0>;
+		aw-cali-mode = "none";
+		aw-re-max = <30000>;
+		aw-re-min = <4000>;
+		rename-flag = <1>;
+		sound-channel = <4>;
+		sync-load = <1>;
+		one_rst_flag = <1>;
+		reset-gpio = <&tlmm 128 GPIO_ACTIVE_HIGH>;
+		firmware-name = "qcom/sm8650/lenovo/tb520fu/aw882xx_acf.bin";
+	};
+	amp2: amplifier@36 {
+		compatible = "awinic,aw882xx_smartpa";
+		reg = <0x36>;
+		#sound-dai-cells = <0>;
+		aw-cali-mode = "none";
+		aw-re-max = <30000>;
+		aw-re-min = <4000>;
+		rename-flag = <1>;
+		sound-channel = <2>;
+		sync-load = <1>;
+		one_rst_flag = <1>;
+		reset-gpio = <&tlmm 128 GPIO_ACTIVE_HIGH>;
+		firmware-name = "qcom/sm8650/lenovo/tb520fu/aw882xx_acf.bin";
+	};
+};
+
+&i2c7 {
+	amp1: amplifier@34 {
+		compatible = "awinic,aw882xx_smartpa";
+		reg = <0x34>;
+		#sound-dai-cells = <0>;
+		aw-cali-mode = "none";
+		aw-re-max = <30000>;
+		aw-re-min = <4000>;
+		rename-flag = <1>;
+		sound-channel = <1>;
+		sync-load = <1>;
+		one_rst_flag = <2>;
+		reset-gpio = <&tlmm 28 GPIO_ACTIVE_HIGH>;
+		firmware-name = "qcom/sm8650/lenovo/tb520fu/aw882xx_acf.bin";
+	};
+	amp3: amplifier@35 {
+		compatible = "awinic,aw882xx_smartpa";
+		reg = <0x35>;
+		#sound-dai-cells = <0>;
+		aw-cali-mode = "none";
+		aw-re-max = <30000>;
+		aw-re-min = <4000>;
+		rename-flag = <1>;
+		sound-channel = <3>;
+		sync-load = <1>;
+		one_rst_flag = <2>;
+		reset-gpio = <&tlmm 28 GPIO_ACTIVE_HIGH>;
+		firmware-name = "qcom/sm8650/lenovo/tb520fu/aw882xx_acf.bin";
+	};
+	amp5: amplifier@36 {
+		compatible = "awinic,aw882xx_smartpa";
+		reg = <0x36>;
+		#sound-dai-cells = <0>;
+		aw-cali-mode = "none";
+		aw-re-max = <30000>;
+		aw-re-min = <4000>;
+		rename-flag = <1>;
+		sound-channel = <5>;
+		sync-load = <1>;
+		one_rst_flag = <2>;
+		reset-gpio = <&tlmm 28 GPIO_ACTIVE_HIGH>;
+		firmware-name = "qcom/sm8650/lenovo/tb520fu/aw882xx_acf.bin";
+	};
+};
+
+&i2c6 {
+
+	typec-retimer@30 {
+		compatible = "parade,ps5169", "hq_redriver,ps5169";
+		reg = <0x30>;
+
+		retimer-switch;
+		orientation-switch;
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				redriver_ss_out: endpoint@0 {
+					reg = <0>;
+					remote-endpoint = <&pmic_glink_ss_in>;
+				};
+
+			};
+
+			port@1 {
+				reg = <1>;
+
+				redriver_ss_in: endpoint {
+					data-lanes = <3 2 1 0>;
+					remote-endpoint = <&usb_dp_qmpphy_out>;
+				};
+			};
+		};
+	};
+};
+
+&tlmm {
+
+	bt_default: bt-default-state {
+		bt-en-pins {
+			pins = "gpio17";
+			function = "gpio";
+			drive-strength = <16>;
+			bias-disable;
+		};
+
+		sw-ctrl-pins {
+			pins = "gpio18";
+			function = "gpio";
+			bias-pull-down;
+		};
+	};
+
+	wlan_en: wlan-en-state {
+		pins = "gpio16";
+		function = "gpio";
+		drive-strength = <8>;
+		bias-pull-down;
+	};
+
+	wlan_sw_ctrl_default: wlan-sw-ctrl-default-state {
+		pins = "gpio18", "gpio19";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-disable;
+		output-high;
+	};
+
+	wcd_default: wcd-reset-n-active-state {
+		pins = "gpio107";
+		function = "gpio";
+		drive-strength = <16>;
+		bias-disable;
+		output-low;
+	};
+
+	tdm1_clk_active: tdm1-clk-active-state {
+		pins = "gpio121";
+		function = "i2s1_sck";
+		drive-strength = <8>;
+		bias-disable;
+		output-high;
+	};
+
+	tdm1_clk_sleep: tdm1-clk-sleep-state {
+		pins = "gpio121";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-pull-down;
+		input-enable;
+	};
+
+	tdm1_ws_active: tdm1-ws-active-state {
+		pins = "gpio123";
+		function = "i2s1_ws";
+		drive-strength = <8>;
+		bias-disable;
+		output-high;
+	};
+
+	tdm1_ws_sleep: tdm1-ws-sleep-state {
+		pins = "gpio123";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-pull-down;
+		input-enable;
+	};
+
+	tdm1_din_active: tdm1-din-active-state {
+		pins = "gpio122";
+		function = "i2s1_data0";
+		drive-strength = <8>;
+		bias-disable;
+	};
+
+	tdm1_din_sleep: tdm1-din-sleep-state {
+		pins = "gpio122";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-pull-down;
+		input-enable;
+	};
+
+	tdm1_dout_active: tdm1-dout-active-state {
+		pins = "gpio124";
+		function = "i2s1_data1";
+		drive-strength = <8>;
+		bias-disable;
+	};
+
+	tdm1_dout_sleep: tdm1-dout-sleep-state {
+		pins = "gpio124";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-pull-down;
+		input-enable;
+	};
+};
+
+/ {
+	pen-hall-left {
+		compatible = "gpio-keys";
+		label = "TB520FU Pen Magnet 1";
+		pen-inserted {
+			linux,input-type = <EV_SW>;
+			linux,code = <SW_PEN_INSERTED>;
+			gpios = <&tlmm 177 GPIO_ACTIVE_LOW>;
+			debounce-interval = <20>;
+			wakeup-source;
+		};
+	};
+	pen-hall-right {
+		compatible = "gpio-keys";
+		label = "TB520FU Pen Magnet 2";
+		pen-inserted {
+			linux,input-type = <EV_SW>;
+			linux,code = <SW_PEN_INSERTED>;
+			gpios = <&tlmm 182 GPIO_ACTIVE_LOW>;
+			debounce-interval = <20>;
+			wakeup-source;
+		};
+	};
+};
+&qupv3_id_1 {
+	/* QUP2 SE2: stock hsuart1@888000, not QUP0 SE2. */
+	pogo_uart: serial@888000 {
+		compatible = "qcom,geni-uart";
+		reg = <0 0x00888000 0 0x4000>;
+		interrupts = <GIC_SPI 584 IRQ_TYPE_LEVEL_HIGH 0>;
+		clocks = <&gcc GCC_QUPV3_WRAP2_S2_CLK>;
+		clock-names = "se";
+		interconnects = <&clk_virt MASTER_QUP_CORE_2 QCOM_ICC_TAG_ALWAYS
+		&clk_virt SLAVE_QUP_CORE_2 QCOM_ICC_TAG_ALWAYS>,
+		<&gem_noc MASTER_APPSS_PROC QCOM_ICC_TAG_ACTIVE_ONLY
+		&config_noc SLAVE_QUP_2 QCOM_ICC_TAG_ACTIVE_ONLY>;
+		interconnect-names = "qup-core", "qup-config";
+		power-domains = <&rpmhpd RPMHPD_CX>;
+		operating-points-v2 = <&qup_opp_table_128mhz>;
+		pinctrl-0 = <&pogo_uart_pins>;
+		pinctrl-names = "default";
+		status = "okay";
+		keyboard {
+			compatible = "lenovo,tb520fu-pogo-keyboard";
+			power-enable-gpios = <&tlmm 173 GPIO_ACTIVE_HIGH>;
+			plug-gpios = <&tlmm 198 GPIO_ACTIVE_LOW>;
+			wake-gpios = <&tlmm 171 GPIO_ACTIVE_HIGH>;
+			tx-enable-gpios = <&tlmm 119 GPIO_ACTIVE_HIGH>;
+		};
+	};
+};
+&tlmm {
+	pogo_uart_pins: pogo-uart-state {
+		tx-pins {
+			pins = "gpio10";
+			function = "qup2_se2";
+			drive-strength = <2>;
+			bias-disable;
+		};
+		rx-pins {
+			pins = "gpio11";
+			function = "qup2_se2";
+			drive-strength = <2>;
+			bias-pull-up;
+		};
+	};
+};
+
+&i2c3 {
+	status = "okay";
+	usbss@e {
+		compatible = "qcom,wcd9390-usbss";
+		reg = <0x0e>;
+		vdd-supply = <&vreg_l15b_1p8>;
+		mode-switch;
+		orientation-switch;
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			port@0 {
+				reg = <0>;
+				wcd_usbss_sbu: endpoint {
+					remote-endpoint = <&pmic_glink_sbu>;
+				};
+			};
+			port@1 {
+				reg = <1>;
+				wcd_usbss_codec: endpoint {
+					remote-endpoint = <&wcd_codec_headset_in>;
+				};
+			};
+		};
+	};
+};
+
+/* Bound in the stock kernel. Firmware download / eSE support remains pending. */
+&i2c0 {
+	clock-frequency = <400000>;
+	status = "okay";
+	nfc@28 {
+		compatible = "nxp,nxp-nci-i2c";
+		reg = <0x28>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <75 IRQ_TYPE_LEVEL_HIGH>;
+		enable-gpios = <&tlmm 34 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&nfc_pins>;
+	};
+};
+&tlmm {
+	nfc_pins: nfc-state {
+		irq-pins {
+			pins = "gpio75", "gpio35";
+			function = "gpio";
+			bias-pull-down;
+			input-enable;
+		};
+		en-pins {
+			pins = "gpio34";
+			function = "gpio";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+};
+
+&pmk8550 {
+	pmk8550_hap_sdam: nvram@9d00 {
+		compatible = "qcom,spmi-sdam";
+		reg = <0x9d00>;
+	};
+};
+&pm8550b {
+	haptics@f000 {
+		compatible = "qcom,hv-haptics";
+		reg = <0xf000>, <0xf100>, <0xf200>;
+		interrupts = <7 0xf0 1 IRQ_TYPE_EDGE_RISING>;
+		interrupt-names = "fifo-empty";
+		qcom,vmax-mv = <1700>;
+		qcom,lra-period-us = <5880>;
+		qcom,brake-mode = <1>;
+		qcom,brake-pattern = [ff 3f 1f];
+		qcom,drv-sig-shape = <1>;
+		qcom,brake-sig-shape = <1>;
+		nvmem = <&pmk8550_hap_sdam>;
+		nvmem-names = "hap_cfg_sdam";
+		qcom,hap-swr-slave-reg {
+			regulator-name = "hap-swr-slave-reg";
+		};
+	};
+};
+
+&apps_rsc {
+	regulators-0 {
+		vreg_l9b_3p0: ldo9 {
+			regulator-name = "vreg_l9b_3p0";
+			regulator-min-microvolt = <3000000>;
+			regulator-max-microvolt = <3000000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+		};
+	};
+};
+/ {
+	fingerprint-control {
+		compatible = "lenovo,tb520fu-goodix-control";
+		vdd-supply = <&vreg_l9b_3p0>;
+		reset-gpios = <&tlmm 91 GPIO_ACTIVE_LOW>;
+		irq-gpios = <&tlmm 92 GPIO_ACTIVE_HIGH>;
+		/* The driver leaves VDD off until root requests it; no SPI access. */
+	};
+};

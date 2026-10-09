@@ -1,10 +1,10 @@
 #!/bin/bash
-# Install local stock TB520FU touch/GPU dependencies. No remote fallback.
+# Install local stock TB520FU hardware dependencies. No remote fallback.
 set -euo pipefail
 archive=/ctx/build_files/firmware-lenovo-tb520fu.tar.gz
 checksum=${archive}.sha256
 if [[ ! -f ${archive} || ! -f ${checksum} ]]; then
-    echo 'TB520FU firmware missing: run tools/pack-tb520fu-firmware.py --stock-root <dump> before creating an image.' >&2
+    echo 'TB520FU firmware missing: run tools/pack-tb520fu-firmware.py --stock-root <dump> --image-dir <stock-images> before creating an image.' >&2
     exit 1
 fi
 (cd /ctx/build_files && sha256sum -c "${checksum}")

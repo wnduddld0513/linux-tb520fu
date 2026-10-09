@@ -1,23 +1,27 @@
-# Linux TB520FU — WSL port workspace
+# Linux TB520FU — Yoga Tab Plus 포팅
 
-This branch is the TB520FU development fork of
-[enij90/armada-tb321fu](https://github.com/enij90/armada-tb321fu).
-TB520FU-specific Tianma/BOE NT36532 panel, NT36532 SPI multitouch and synchronized
-dual KTZ8866 backlight sources are now included, with separate TB520FU device trees
-and a local stock-firmware packer. This is initial bring-up code, **not compiled or
-verified on hardware**. The inherited TB321FU installation instructions below do
-not establish TB520FU compatibility.
+`wnduddld0513/linux-tb520fu`의 **`tb520fu` 전용 브랜치**입니다. Lenovo 순정 DT·GPL 커널·벤더 덤프와 연결된 TB520FU의 읽기 전용 ADB 정보를 바탕으로 포팅합니다.
 
-See [TB520FU port status and stock-source evidence](tb520fu/PORTING.md) for the
-implemented wiring, DTB selection, firmware preparation and remaining work.
+**현재는 소스 포팅 단계입니다. 빌드·DTB 생성·이미지 생성·Linux 실기기 부팅 검증을 하지 않았습니다. 아래 항목은 동작 보증이 아닙니다. 카메라 촬영·지문 인증 등은 아직 미완료입니다.**
 
-## Fork-only development
+| 하드웨어 | 반영 내용 / 상태 |
+| --- | --- |
+| 화면·밝기 | Tianma/BOE NT36532, 2944×1840 120 Hz, dual DSI/DSC, dual KTZ8866 소스 구현 |
+| 터치·펜 | NT36532 SPI 10점 터치, 8191단계 펜 압력·호버·기울기 소스 구현 |
+| GPU·영상 | Adreno 750, Iris, 순정 GPU/VPU 펌웨어 경로 연결 |
+| Wi-Fi·BT | WCN7850 전원·PCIe·UART, Lapis 전용 RF/BT 펌웨어 연결 |
+| 오디오 | 6× AW882xx, WCD9395, USBSS, UCM 및 TB520FU 토폴로지 소스 추가 |
+| USB-C·DP·충전 | PS5169, PM8550B eUSB2 repeater, PMIC GLINK/battmgr 연결 |
+| 센서 | 실제 LSM6DSO·TCS3408·ADS610x0 등 SSC 구성/라이브러리, FastRPC·IMU 서비스 연결 |
+| 진동 | 실제 PM8550B HV haptics 드라이버·모터 설정 포팅; AW86937 구성 제외 |
+| 키보드·트랙패드 | pogo serdev 입력 드라이버, 순정 921600 8N1, 4점 MT·미디어 키 구현 |
+| NFC | 순정 VEN/IRQ 배선으로 기본 NCI 연결; eSE·펌웨어 갱신은 미구현 |
+| 지문 | Goodix 전원·리셋·IRQ 제어 구현; 영상·인증은 미구현 |
+| 카메라 | CAMSS/OV13B10 공용 드라이버 설정 및 순정 배선 조사; 센서·전원·촬영 경로 미완료 |
 
-- Repository: [wnduddld0513/linux-tb520fu](https://github.com/wnduddld0513/linux-tb520fu)
-- Development branch: `tb520fu`. Keep `main` as the original baseline.
-- WSL checkout: `/home/wnduddld0513/linux-tb520fu`.
+상세 현황: [전체 하드웨어 목록](tb520fu/HARDWARE.md), [포팅·펌웨어 준비](tb520fu/PORTING.md), [실기기에서 읽은 장치 정보](tb520fu/live-hardware.json).
 
-For a fresh WSL checkout:
+## 포크에만 푸시
 
 ```bash
 git clone --branch tb520fu https://github.com/wnduddld0513/linux-tb520fu.git
@@ -25,207 +29,14 @@ cd linux-tb520fu
 bash tools/setup-fork.sh
 ```
 
-The setup script pins the fetch/push URL and default push refspec to this fork's
-`tb520fu` branch. The installed `pre-push` hook rejects other repositories,
-branches, tags and branch deletion, including pushes using an explicit URL.
-These settings apply to this checkout; run setup again in every new clone.
-Git hooks can be deliberately bypassed, so they protect against accidental pushes.
+설정 스크립트가 이 포크의 `tb520fu → tb520fu`로 push URL/refspec을 고정합니다. `.githooks/pre-push`는 다른 저장소·브랜치·태그·삭제 푸시를 차단합니다. 새 체크아웃마다 설정이 필요하며, Git hook을 명시적으로 우회하는 행위까지 막지는 못합니다. `main`은 원래 기준 상태로 유지합니다.
 
 ```bash
-git add <changed-files>
+git add <변경한 파일>
 git commit -m "Describe the TB520FU change"
-git push
+git push origin tb520fu:tb520fu
 ```
 
-For PRs, always select this fork explicitly:
+업스트림 동기화 워크플로와 PR 도구도 이 포크를 대상으로 합니다. TB520FU 브랜치 푸시는 이미지 빌드 워크플로의 push 조건에 포함되지 않습니다.
 
-```bash
-gh pr create --repo wnduddld0513/linux-tb520fu --base tb520fu
-```
-
-The manual upstream sync workflow reads `enij90/armada-tb321fu:main` and creates
-its review PR **inside this fork**, targeting `tb520fu`. It never submits a PR to
-the original repository. Inherited release and PR artifact workflows also select
-the current repository explicitly. TB321FU release tooling remains reference code
-until the TB520FU hardware port and image generation have been adapted.
-
-## Original TB321FU reference
-
-# Armada on the Lenovo Legion Tab Gen 3 (TB321FU) — experimental
-
-This is an **unofficial, experimental** port of [Armada](https://github.com/armada-os/armada)
-to the **Lenovo Legion Tab Gen 3 / Legion Y700 (2025), model TB321FU** (Qualcomm Snapdragon 8 Gen 3, SM8650).
-It is not supported by the Armada project: please report problems here, not upstream.
-
-> [!WARNING]
-> **This guide replaces Android with Armada.** Installing erases all data on the tablet
-> and requires an unlocked bootloader. Back up everything first. (Keeping Android
-> alongside Armada may be possible, but it is not covered here.)
-> You can always go back to stock Android with Lenovo's official rescue tool (LMSA).
-
-## Supported hardware: BOE panel only
-
-The TB321FU ships with two different display panels: **BOE** and **CSOT**. Only **BOE** is
-supported for now. On a CSOT tablet the screen stays black.
-
-Check your panel **before doing anything**, from stock Android, with USB debugging enabled
-(no root needed):
-
-```bash
-adb shell getprop ro.vendor.display.paneltype
-```
-
-- `1` → **BOE**: supported.
-- anything else, or empty → **not supported** (probably CSOT): stop here.
-
-CSOT support is planned; testers with a CSOT tablet are welcome (open an issue).
-
-## Status
-
-| Feature | Status |
-| --- | --- |
-| Display, 1600×2560 BOE, 60/90/120/144/165 Hz, landscape | ✅ |
-| Touchscreen | ✅ |
-| GPU (Adreno 750, Turnip/Freedreno) | ✅ |
-| Hardware video decoding (iris) | ✅ |
-| Speakers (2× AW882xx) | ✅ |
-| Internal microphones | ✅ |
-| Wi-Fi (WCN7850) | ✅ |
-| Bluetooth | ✅ |
-| USB-C charging, Lenovo Legion G9 controller (short-side port) | ✅ |
-| Vibration motors (2× AW86937) | ⚠️ driver works, not used by games yet |
-| Sensors (accelerometer, gyroscope, light) | ❌ not yet |
-| Cameras | ❌ |
-| CSOT panel | ❌ |
-
-## Known issues
-
-- **Turn off Steam's performance overlay when you don't need it.** On this tablet
-  (2560×1600 at 165 Hz) even the FPS counter makes the compositor redraw every frame on
-  the GPU: in the Steam menu the tablet draws about 4.5 W with the overlay on and about
-  2.2 W with it off. (Quick Access → Performance → Performance overlay level: Off.)
-
-## Installation
-
-You start from the tablet as it comes from the factory, running Lenovo's Android (ZUI).
-
-What you will need:
-
-- the tablet, charged, with a **BOE** panel (see the check above);
-- a PC (Windows, Linux or macOS) with Android's
-  [platform-tools](https://developer.android.com/tools/releases/platform-tools) (`adb`, `fastboot`)
-  and a USB-C cable;
-- a backup of anything you want to keep: the installation erases the tablet.
-
-### 1. Unlock the bootloader
-
-Lenovo tablets are unlocked with a signed unlock file for your serial number:
-
-1. On Android: Settings → About → tap *Build number* 7 times, then in Developer options
-   enable **OEM unlocking** and **USB debugging**.
-2. Get the unlock file (`sn.img`) for your serial number, for example from
-   [lenovobl.neko.ink](https://lenovobl.neko.ink).
-3. Flash it and unlock (**this wipes Android**):
-   ```bash
-   adb reboot bootloader
-   fastboot flash unlock sn.img
-   fastboot oem unlock-go
-   ```
-
-The bootloader stays unlocked even if you later restore stock Android.
-
-### 2. Download and check the images
-
-From the [latest release](https://github.com/enij90/armada-tb321fu/releases) download
-`boot.img`, `super.img`, all the `userdata.simg.part*` files and `SHA256SUMS`, into one folder.
-
-Join the userdata parts into `userdata.simg`:
-
-- Windows (Command Prompt, in the download folder):
-  ```bat
-  copy /b userdata.simg.part* userdata.simg
-  ```
-- Linux / macOS:
-  ```bash
-  cat userdata.simg.part* > userdata.simg
-  ```
-
-Then check the files against `SHA256SUMS`
-(Linux: `sha256sum -c --ignore-missing SHA256SUMS`; Windows: `CertUtil -hashfile userdata.simg SHA256`
-and compare by eye, same for `boot.img` and `super.img`).
-
-### 3. Flash
-
-Put the tablet in fastboot mode (`adb reboot bootloader`, or power off and hold
-Volume down + Power), connect it to the PC and run:
-
-```bash
-fastboot flash boot_a boot.img
-fastboot flash super super.img
-fastboot -S 700M flash userdata userdata.simg
-fastboot reboot
-```
-
-`userdata` is sent in about 17 chunks and takes around 5 minutes.
-
-### 4. First boot
-
-Lenovo logo → GRUB → "Preparing Armada" → Wi-Fi and Steam setup. The first boot takes a
-little longer. Then you are in Steam's Game Mode.
-
-- Desktop user: `armada`, password `armada`. Change it (`passwd` in a terminal in desktop mode).
-- SSH is off by default; you can turn it on in desktop mode → **Armada Tools**.
-- System updates come through Steam (Settings → System, software updates). They download in
-  the background and apply at the next restart. If a new version does not start, pick the
-  GRUB entry marked "(previous)".
-
-### Troubleshooting
-
-- **The tablet stays on the fastboot screen and fastboot stops responding after flashing:**
-  choose *START* with the volume keys and press Power, or hold Power for ~15 seconds.
-  The partitions are already written.
-- **A fastboot command fails halfway:** run `fastboot reboot bootloader`, wait for the tablet
-  to come back, then repeat only the failed command.
-
-### Going back to Android
-
-Use Lenovo's official rescue tool, **LMSA** (Lenovo Rescue and Smart Assistant): Rescue →
-it downloads and flashes the stock ROM. If the tablet does not boot at all, see
-[this XDA unbrick guide](https://xdaforums.com/t/guide-unbrick-lenovo-y700-tablet.4509297/).
-
-## Building
-
-Every push to `main` is built and signed by GitHub Actions and published as
-`ghcr.io/enij90/armada-tb321fu:latest`, which installed tablets update from.
-
-Same as upstream Armada (`just build`). The proprietary firmware is not stored in this
-repository: the build downloads it from
-[firmware-lenovo-tb321fu](https://github.com/enij90/firmware-lenovo-tb321fu)
-and checks its SHA-256 (`build_files/tb321fu-firmware.env`). For offline builds, drop
-`firmware-lenovo-tb321fu-<version>.tar.gz` into `build_files/`.
-
-Device-specific parts:
-
-- kernel patches `packages/kernel/patches/08xx-*` and DTS `packages/kernel/dts/sm8650-lenovo-tb321fu.dts`;
-- device profile `system_files/usr/lib/armada/devices/lenovo-legion-tab.conf`;
-- `tb321fu-*` services, UCM and WirePlumber configuration under `system_files/`;
-- gamescope patch `0027` (EDID pixel clock above 655.35 MHz, needed for 165 Hz).
-
-## Credits
-
-- **[GUF296](https://github.com/GUF296)**: the first Linux port for this tablet (Kubuntu).
-  His kernel and device tree are the starting point of this work. From his tree come:
-  - the Novatek NT36523 touch driver;
-  - the Parade PS5169 redriver;
-  - AudioReach secondary-TDM speaker support;
-  - the CSOT panel driver;
-  - the UEFI/GRUB boot chain;
-  - the AW86937 haptics driver;
-  - most of the firmware.
-- **[Armada](https://github.com/armada-os/armada)**: the OS this is based on (its original README: [README-armada.md](README-armada.md)).
-- **[ROCKNIX](https://github.com/ROCKNIX/distribution)**: SM8650 platform work and inline-rotation support for the display controller.
-
-## License
-
-Same as Armada (GPL-2.0-or-later); kernel patches follow the Linux kernel license.
-The firmware in the separate repository is proprietary (see its README).
+다른 기기 전용 DTS와 펌웨어는 이 구성에서 제거했고, 다른 기기 패널·터치·내장 게임패드 등의 패치는 활성 series에서 제외했습니다. 제외 목록은 [패치](tb520fu/excluded-patches.txt)와 [펌웨어](tb520fu/excluded-firmware.txt)에 있습니다. 일반 SoC 기능, 다른 패치의 선행 조건, 확실하지 않은 공용 USB/HID 지원은 유지합니다. 원본 TB321FU 설명은 [역사적 참조 문서](docs/TB321FU-reference.md)로 분리했습니다.

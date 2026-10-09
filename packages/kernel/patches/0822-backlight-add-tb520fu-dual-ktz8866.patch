@@ -21,7 +21,7 @@ diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
 diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
 --- a/drivers/video/backlight/Makefile
 +++ b/drivers/video/backlight/Makefile
-@@ -65,3 +65,4 @@
+@@ -63,3 +63,4 @@
  obj-$(CONFIG_BACKLIGHT_ARCXCNN) 	+= arcxcnn_bl.o
  obj-$(CONFIG_BACKLIGHT_RAVE_SP)		+= rave-sp-backlight.o
  obj-$(CONFIG_BACKLIGHT_LED)		+= led_bl.o

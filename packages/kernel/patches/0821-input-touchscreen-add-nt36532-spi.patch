@@ -4,10 +4,10 @@ Subject: [PATCH] input: add NT36532 SPI touch with TB520FU cascade firmware
 diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
 --- a/drivers/input/touchscreen/Kconfig
 +++ b/drivers/input/touchscreen/Kconfig
-@@ -730,6 +730,12 @@
+@@ -23,6 +23,12 @@
  
  	  To compile this driver as a module, choose M here: the
- 	  module will be called novatek-nvt-ts.
+ 	  module will be called 88pm860x-ts.
 +
 +config TOUCHSCREEN_NT36532_SPI
 +	tristate "Novatek NT36532 no-flash SPI touchscreen"
@@ -15,20 +15,20 @@ diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconf
 +	help
 +	  TB520FU NT36532 with cascade firmware download and panel follower PM.
  
- source "drivers/input/touchscreen/nt36523/Kconfig"
- 
+ config TOUCHSCREEN_ADS7846
+ 	tristate "ADS7846/TSC2046/AD7873 and AD(S)7843 based touchscreens"
 diff --git a/drivers/input/touchscreen/Makefile b/drivers/input/touchscreen/Makefile
 --- a/drivers/input/touchscreen/Makefile
 +++ b/drivers/input/touchscreen/Makefile
-@@ -125,3 +125,4 @@
+@@ -119,3 +119,4 @@
+ obj-$(CONFIG_TOUCHSCREEN_IQS7211)	+= iqs7211.o
  obj-$(CONFIG_TOUCHSCREEN_ZINITIX)	+= zinitix.o
  obj-$(CONFIG_TOUCHSCREEN_HIMAX_HX83112B)	+= himax_hx83112b.o
- obj-$(CONFIG_TOUCHSCREEN_NT36523_SPI)	+= nt36523/
 +obj-$(CONFIG_TOUCHSCREEN_NT36532_SPI) += nt36532-spi.o
 diff --git a/drivers/input/touchscreen/nt36532-spi.c b/drivers/input/touchscreen/nt36532-spi.c
 --- /dev/null
 +++ b/drivers/input/touchscreen/nt36532-spi.c
-@@ -0,0 +1,535 @@
+@@ -0,0 +1,620 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
 + * Novatek NT36532 no-flash SPI touch, Lenovo TB520FU.
@@ -66,8 +66,9 @@ diff --git a/drivers/input/touchscreen/nt36532-spi.c b/drivers/input/touchscreen
 +struct nvt_partition { u32 bin, sram, size, crc; };
 +struct nt36532_touch {
 +	struct spi_device *spi;
-+	struct input_dev *input;
-+	struct touchscreen_properties prop;
++	struct input_dev *input, *pen;
++	struct touchscreen_properties prop, pen_prop;
++	u32 pen_pressure_max;
 +	struct drm_panel_follower follower;
 +	/* ctrl serializes panel/PM; io serializes firmware and IRQ transfers. */
 +	struct mutex ctrl, io;
@@ -321,8 +322,65 @@ diff --git a/drivers/input/touchscreen/nt36532-spi.c b/drivers/input/touchscreen
 +	}
 +	return ret;
 +}
++static void nvt_pen_release(struct nt36532_touch *t)
++{
++	if (!t->pen)
++		return;
++	input_report_key(t->pen, BTN_TOUCH, 0);
++	input_report_key(t->pen, BTN_TOOL_PEN, 0);
++	input_report_key(t->pen, BTN_STYLUS, 0);
++	input_report_key(t->pen, BTN_STYLUS2, 0);
++	input_report_abs(t->pen, ABS_PRESSURE, 0);
++	input_report_abs(t->pen, ABS_DISTANCE, 0);
++	input_sync(t->pen);
++}
++static void nvt_pen_report(struct nt36532_touch *t, const u8 *p)
++{
++	u16 x, y, pressure, distance;
++	int tx, ty, n;
++	u8 checksum = 0;
++
++	if (!t->pen)
++		return;
++	for (n = 0; n < 14; n++)
++		checksum += p[n];
++	if (checksum)
++		return;
++	if (p[0] == 0xff) {
++		nvt_pen_release(t);
++		return;
++	}
++	/* F0/F1 carry identification/status, not coordinates. */
++	if (p[0] != 1)
++		return;
++	x = get_unaligned_be16(p+1);
++	y = get_unaligned_be16(p+3);
++	pressure = get_unaligned_be16(p+5);
++	distance = get_unaligned_be16(p+9);
++	if (x > t->pen_prop.max_x || y > t->pen_prop.max_y ||
++	    pressure > t->pen_pressure_max || distance > 1)
++		return;
++	tx = (s8)p[7];
++	ty = (s8)p[8];
++	if (tx < -60 || tx > 60 || ty < -60 || ty > 60)
++		return;
++	if (t->pen_prop.invert_x) tx = -tx;
++	if (t->pen_prop.invert_y) ty = -ty;
++	if (t->pen_prop.swap_x_y) swap(tx, ty);
++	touchscreen_report_pos(t->pen, &t->pen_prop, x, y, false);
++	input_report_abs(t->pen, ABS_PRESSURE, pressure);
++	input_report_abs(t->pen, ABS_DISTANCE, distance);
++	input_report_abs(t->pen, ABS_TILT_X, tx);
++	input_report_abs(t->pen, ABS_TILT_Y, ty);
++	input_report_key(t->pen, BTN_TOUCH, pressure != 0);
++	input_report_key(t->pen, BTN_TOOL_PEN, distance || pressure);
++	input_report_key(t->pen, BTN_STYLUS, p[11] & 1);
++	input_report_key(t->pen, BTN_STYLUS2, !!(p[11] & 2));
++	input_sync(t->pen);
++}
 +static void nvt_release_contacts(struct nt36532_touch *t)
 +{
++	nvt_pen_release(t);
 +	int n;
 +
 +	for (n = 0; n < NVT_CONTACTS; n++) {
@@ -388,6 +446,7 @@ diff --git a/drivers/input/touchscreen/nt36532-spi.c b/drivers/input/touchscreen
 +	}
 +	input_mt_sync_frame(t->input);
 +	input_sync(t->input);
++	nvt_pen_report(t, packet + 65);
 +out:
 +	mutex_unlock(&t->io);
 +	return IRQ_HANDLED;
@@ -536,6 +595,32 @@ diff --git a/drivers/input/touchscreen/nt36532-spi.c b/drivers/input/touchscreen
 +	ret = input_register_device(t->input);
 +	if (ret)
 +		return ret;
++	if (device_property_read_bool(dev, "novatek,pen-support")) {
++		t->pen = devm_input_allocate_device(dev);
++		if (!t->pen)
++			return -ENOMEM;
++		t->pen->name = "Novatek NT36532 Pen";
++		t->pen->id.bustype = BUS_SPI;
++		t->pen_pressure_max = 4095;
++		device_property_read_u32(dev, "novatek,pen-pressure-max", &t->pen_pressure_max);
++		if (t->pen_pressure_max != 4095 && t->pen_pressure_max != 8191)
++			return -EINVAL;
++		input_set_abs_params(t->pen, ABS_X, 0, 18400, 0, 0);
++		input_set_abs_params(t->pen, ABS_Y, 0, 29440, 0, 0);
++		input_set_abs_params(t->pen, ABS_PRESSURE, 0, t->pen_pressure_max, 0, 0);
++		input_set_abs_params(t->pen, ABS_DISTANCE, 0, 1, 0, 0);
++		input_set_abs_params(t->pen, ABS_TILT_X, -60, 60, 0, 0);
++		input_set_abs_params(t->pen, ABS_TILT_Y, -60, 60, 0, 0);
++		input_set_capability(t->pen, EV_KEY, BTN_TOOL_PEN);
++		input_set_capability(t->pen, EV_KEY, BTN_TOUCH);
++		input_set_capability(t->pen, EV_KEY, BTN_STYLUS);
++		input_set_capability(t->pen, EV_KEY, BTN_STYLUS2);
++		__set_bit(INPUT_PROP_DIRECT, t->pen->propbit);
++		touchscreen_parse_properties(t->pen, false, &t->pen_prop);
++		ret = input_register_device(t->pen);
++		if (ret)
++			return ret;
++	}
 +	spi_set_drvdata(spi, t);
 +	ret = devm_request_threaded_irq(dev, spi->irq, NULL, nvt_irq,
 +					IRQF_ONESHOT | IRQF_NO_AUTOEN, dev_name(dev), t);

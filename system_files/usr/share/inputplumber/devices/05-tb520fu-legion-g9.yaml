@@ -1,0 +1,57 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/ShadowBlip/InputPlumber/main/rootfs/usr/share/inputplumber/schema/composite_device_v1.json
+# Lenovo Yoga Tab Plus (TB520FU) with its Legion G9 controller attached.
+# With Armada's default controller type the G9 reaches Steam as a Steam Deck
+# controller, so Legion+button shortcuts behave as on a Deck (InputPlumber
+# patch 0006 keeps Legion held through them). The tablet's IMU (via SSC) is
+# the controller's motion source.
+version: 1
+kind: CompositeDevice
+name: Lenovo Yoga Tab Plus + Legion G9
+matches:
+  - udev:
+      sys_path: /sys/firmware/devicetree/base
+      attributes:
+        - name: model
+          value: Lenovo Yoga Tab Plus / TB520FU (Tianma)
+  - udev:
+      sys_path: /sys/firmware/devicetree/base
+      attributes:
+        - name: model
+          value: Lenovo Yoga Tab Plus / TB520FU (BOE)
+single_source: false
+source_devices:
+  - group: gamepad
+    evdev:
+      name: GameSir Legion Gaming Controller G9
+      vendor_id: "3537"
+      product_id: "1134"
+      handler: event*
+    capability_map_id: lenovo_legion_g9
+  # The tablet's accelerometer + gyroscope (tb321fu-imu-bridge, from the SSC).
+  # A uinput device: InputPlumber accepts it through patch 0005; like the
+  # PS4 motion sensors it is a gamepad-group source mapped by imu_generic.
+  - group: gamepad
+    evdev:
+      name: TB520FU IMU
+      handler: event*
+    capability_map_id: imu_generic
+  # One native PM8550B haptics device, not the Y700 AW86937 pair.
+  - group: gamepad
+    evdev:
+      name: qcom-hv-haptics
+      handler: event*
+  # The G9 firmware's own Legion shortcuts (volume, brightness) arrive as
+  # consumer keys alongside the Steam chords on the same buttons: drop them,
+  # Steam's chords take those buttons.
+  - group: keyboard
+    blocked: true
+    evdev:
+      name: GameSir Legion Gaming Controller G9 Consumer Control
+      handler: event*
+options:
+  auto_manage: true
+# Armada's controller-type service switches the target to the selected type
+# (deck-uhid by default) at boot and when the G9 is attached.
+target_devices:
+  - xb360
+  - keyboard

@@ -39,6 +39,8 @@ static int uinput_fd = -1;
 static double accel_m[9] = {0, 1, 0, -1, 0, 0, 0, 0, 1};
 static double gyro_m[9] = {0, 1, 0, -1, 0, 0, 0, 0, 1};
 static gboolean verbose;
+static char *device_name;
+static int product_id = 0x321f;
 
 static gboolean parse_matrix(const char *s, double m[9])
 {
@@ -111,8 +113,8 @@ static int setup_uinput(void)
 	}
 	setup.id.bustype = BUS_VIRTUAL;
 	setup.id.vendor = 0x17ef; /* Lenovo */
-	setup.id.product = 0x321f;
-	g_strlcpy(setup.name, DEVICE_NAME, sizeof(setup.name));
+	setup.id.product = product_id;
+	g_strlcpy(setup.name, device_name ?: DEVICE_NAME, sizeof(setup.name));
 	if (ioctl(fd, UI_DEV_SETUP, &setup) < 0 || ioctl(fd, UI_DEV_CREATE) < 0)
 		goto fail;
 	return fd;
@@ -132,6 +134,8 @@ int main(int argc, char **argv)
 	g_autofree char *accel_s = NULL, *gyro_s = NULL;
 	g_autoptr(GError) err = NULL;
 	GOptionEntry entries[] = {
+		{"device-name", 0, 0, G_OPTION_ARG_STRING, &device_name, "evdev device name", "NAME"},
+		{"product-id", 0, 0, G_OPTION_ARG_INT, &product_id, "Lenovo product ID", "ID"},
 		{"accel-matrix", 0, 0, G_OPTION_ARG_STRING, &accel_s, "Accelerometer rotation", "a,b,c;d,e,f;g,h,i"},
 		{"gyro-matrix", 0, 0, G_OPTION_ARG_STRING, &gyro_s, "Gyroscope rotation", "a,b,c;d,e,f;g,h,i"},
 		{"verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "Print every sample", NULL},
@@ -173,7 +177,7 @@ int main(int argc, char **argv)
 		g_printerr("opening sensors: %s\n", err->message);
 		return 1;
 	}
-	g_print("streaming accelerometer + gyroscope to \"%s\"\n", DEVICE_NAME);
+	g_print("streaming accelerometer + gyroscope to \"%s\"\n", device_name ?: DEVICE_NAME);
 
 	g_autoptr(GMainLoop) loop = g_main_loop_new(NULL, FALSE);
 	g_unix_signal_add(SIGTERM, on_signal, loop);

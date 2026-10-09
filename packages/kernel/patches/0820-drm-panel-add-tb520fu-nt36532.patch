@@ -4,9 +4,9 @@ Subject: [PATCH] drm/panel: add TB520FU NT36532 Tianma and BOE panels
 diff --git a/drivers/gpu/drm/panel/Kconfig b/drivers/gpu/drm/panel/Kconfig
 --- a/drivers/gpu/drm/panel/Kconfig
 +++ b/drivers/gpu/drm/panel/Kconfig
-@@ -734,6 +734,14 @@
- 	  uses dual-DSI C-PHY with DSC 1.1 compression.
- 
+@@ -622,6 +622,14 @@
+ 	  around the Novatek NT36523 display controller, such as some
+ 	  Boe panels used in Xiaomi Mi Pad 5 and 5 Pro tablets.
  
 +config DRM_PANEL_NOVATEK_NT36532
 +	tristate "Lenovo TB520FU Novatek NT36532 dual DSI panel"
@@ -22,10 +22,10 @@ diff --git a/drivers/gpu/drm/panel/Kconfig b/drivers/gpu/drm/panel/Kconfig
 diff --git a/drivers/gpu/drm/panel/Makefile b/drivers/gpu/drm/panel/Makefile
 --- a/drivers/gpu/drm/panel/Makefile
 +++ b/drivers/gpu/drm/panel/Makefile
-@@ -70,6 +70,7 @@
+@@ -60,6 +60,7 @@
+ obj-$(CONFIG_DRM_PANEL_NOVATEK_NT35560) += panel-novatek-nt35560.o
  obj-$(CONFIG_DRM_PANEL_NOVATEK_NT35950) += panel-novatek-nt35950.o
  obj-$(CONFIG_DRM_PANEL_NOVATEK_NT36523) += panel-novatek-nt36523.o
- obj-$(CONFIG_DRM_PANEL_NOVATEK_NT36523_KIRBY) += panel-novatek-nt36523-kirby.o
 +obj-$(CONFIG_DRM_PANEL_NOVATEK_NT36532) += panel-novatek-nt36532.o
  obj-$(CONFIG_DRM_PANEL_NOVATEK_NT36672A) += panel-novatek-nt36672a.o
  obj-$(CONFIG_DRM_PANEL_NOVATEK_NT36672E) += panel-novatek-nt36672e.o

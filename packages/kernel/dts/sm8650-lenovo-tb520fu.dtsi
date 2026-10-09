@@ -493,6 +493,8 @@
 	status = "okay";
 	touchscreen: touchscreen@0 {
 		compatible = "novatek,nt36532-spi";
+		novatek,pen-support;
+		novatek,pen-pressure-max = <8191>;
 		reg = <0>;
 		spi-max-frequency = <9600000>;
 		interrupt-parent = <&tlmm>;
@@ -509,7 +511,8 @@
 	};
 };
 &tlmm {
-	gpio-reserved-ranges = <32 8>;
+	/* Stock secure pins: GPIO40..43 and GPIO74. */
+	gpio-reserved-ranges = <40 4>, <74 1>;
 	panel_reset: panel-reset-state {
 		pins = "gpio133";
 		function = "gpio";
@@ -553,3 +556,4 @@
 
 	status = "okay";
 };
+#include "sm8650-lenovo-tb520fu-peripherals.dtsi"

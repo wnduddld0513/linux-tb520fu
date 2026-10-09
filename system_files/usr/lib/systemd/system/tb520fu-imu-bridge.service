@@ -1,0 +1,17 @@
+[Unit]
+Description=Lenovo TB520FU: accelerometer and gyroscope for InputPlumber
+ConditionFirmware=device-tree-compatible(lenovo,tb520fu)
+# The SSC answers only once hexagonrpcd has served the sensor registry.
+After=tb520fu-sns-init.service
+Wants=tb520fu-sns-init.service
+Before=inputplumber.service
+
+[Service]
+# SSC applies stock lapis orientation. Extra game-frame rotation awaits device measurement.
+Environment=LIBSSC_MAX_SAMPLE_RATE=400
+ExecStart=/usr/libexec/tb321fu-imu-bridge --device-name="TB520FU IMU" --product-id=21023 --accel-matrix="1,0,0;0,1,0;0,0,1" --gyro-matrix="1,0,0;0,1,0;0,0,1"
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

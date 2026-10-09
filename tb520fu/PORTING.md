@@ -1,24 +1,8 @@
-# TB520FU 포팅 상태
+# TB520FU 포팅·소스 준비
 
-이 브랜치는 Lenovo Yoga Tab Plus(TB520FU, lapis, SM8650)의 **초기 mainline 포팅 소스**입니다. 화면·멀티터치를 우선 구현했습니다. 사용자 요청에 따라 컴파일, DTB 빌드, 이미지 빌드는 실행하지 않았으며, 실기기 부팅·동작도 확인하지 않았습니다.
+Yoga Tab Plus(TB520FU / lapis / SM8650) 전용 소스 브랜치입니다. 화면 외에 Wi-Fi/BT, 6채널 앰프 구성, USB-C/DP, DSP/SSC, 펜, 키보드·트랙패드, PMIC 진동, NFC 기본 경로, 지문 제어까지 범위를 확장했습니다. **카메라 촬영, 지문 인증, SAR/덮개 정책 등은 미완료**입니다. [전체 하드웨어 상태](HARDWARE.md)에 구현 범위와 남은 항목을 따로 기록합니다.
 
-## 이번에 반영한 하드웨어
-
-| 항목 | 반영 내용 | 근거 |
-| --- | --- | --- |
-| 패널 | Tianma / BOE NT36532 각각의 순정 초기화·종료 명령과 지연 | 순정 실행 중 `running.dts` |
-| 화면 모드 | 전체 2944×1840, 120 Hz, 물리 크기 274×171 mm | 링크당 1472×1840 및 순정 porch |
-| DSI | DSI0+DSI1, 링크당 D-PHY 4레인, DSI0 PLL 공유 | 순정 controller/PHY 설정 |
-| DSC | 1.1 SCR1, 10 bpc→8 bpp, 736×20 슬라이스, 패킷당 2슬라이스 | 순정 DSC 속성 |
-| 패널 전원 | PM8550 L11B 1.2 V / L12B 1.95 V / L13B 3.0 V, reset GPIO133 | 순정 공급 항목 및 리셋 배열 |
-| 백라이트 | I2C6·I2C7의 KTZ8866 두 개, HWEN GPIO82, ENP72 / ENN73 | 순정 init-cmds, enable/disable 배열 |
-| 밝기 | 두 칩을 하나의 backlight 장치로 제어, 범위 0…2047 | 순정 LSB/MSB 레지스터 |
-| 터치 | SPI4 / CS0 / 9.6 MHz / IRQ GPIO162 상승 에지 | 순정 터치 노드 |
-| 터치 프로토콜 | NT36532 trim ID, `0x1fbxxx` 레지스터, 캐스케이드 펌웨어 전송 및 CRC 명령 | Lenovo GPL 커널 6.1.68 `NT36XXX_SPI` |
-| 입력 | 10점 MT, 16비트 좌표, 원시 범위 18400×29440, 패널 follower 및 suspend/resume | 순정 super-resolution 구현 |
-| 저장장치 | UFS 및 reset GPIO210 | SM8650 기본 지원 + 보드 배선 |
-
-TB321FU의 NT36523, 3레인 C-PHY, GPIO87 백라이트 구성을 그대로 사용하지 않습니다. NT36532 패널·터치와 두 KTZ8866을 별도 드라이버로 추가했습니다. 기존 TB321FU 자료는 참조용으로 남습니다.
+사용자 요청으로 컴파일, dtc, DTB/이미지 생성, m4/alsatplg를 실행하지 않았습니다. ADB 장치 식별은 순정 벤더 시스템에서 읽은 결과이며 Linux 동작 확인이 아닙니다.
 
 ## 장치 트리 선택
 
@@ -33,28 +17,39 @@ TB321FU의 NT36523, 3레인 C-PHY, GPIO87 백라이트 구성을 그대로 사�
 
 ## 순정 펌웨어 준비
 
-순정 바이너리는 로컬 덤프에서 가져오며 Git에는 체크섬·출처와 추출 도구만 포함합니다. 이 작업에서 아래 명령을 실행해 로컬 아카이브를 준비했습니다. 이는 이미지 빌드가 아닙니다.
-
 ```bash
-cd /home/wnduddld0513/linux-tb520fu
-python3 tools/pack-tb520fu-firmware.py --stock-root /home/wnduddld0513/tb520fu
+python3 tools/pack-tb520fu-firmware.py \
+  --stock-root /home/wnduddld0513/tb520fu \
+  --image-dir /mnt/c/Users/HJY/Documents/TB520FU/Firmware/TB520FU_ROW_OPEN_USER_Q00002.0_W_ZUI_17.5.10.362_ST_260719-resigned/image
 ```
 
-결과는 `build_files/firmware-lenovo-tb520fu.tar.gz` 및 `.sha256`이며 둘 다 `.gitignore`로 제외됩니다. 두 터치 펌웨어, GPU zap, SQE, GMU의 다섯 파일을 포함합니다. `firmware-manifest.json`의 크기·SHA256과 다르면 추출 도구가 중단합니다. 다른 순정 버전을 사용할 때는 출처 및 프로토콜 호환성을 검토한 뒤 manifest를 갱신하세요.
+`firmware-manifest.json`의 원본 이미지 및 각 파일 크기/SHA256을 확인한 뒤 274개 파일을 `build_files/firmware-lenovo-tb520fu.tar.gz`에 담습니다. 펌웨어 추출/압축만 수행하며 커널이나 이미지를 빌드하지 않습니다. NON-HLOS/BTFM은 읽기 전용 FAT16 reader, dspso는 쓰기 옵션 없는 `debugfs rdump`를 씁니다. 일반 사용자 실행의 ownership 경고와 관계없이 추출 내용은 파일별 해시로 검증합니다.
 
-이미지 생성 경로에는 `tb520fu-firmware.sh`를 연결했습니다. 아카이브가 없으면 실패하도록 했으며 TB321FU 펌웨어를 TB520FU용으로 대체하지 않습니다. 기존 linux-firmware의 일반 GPU SQE/GMU는 유지하고, TB520FU 전용 경로의 zap·터치 파일을 설치합니다. GitHub의 깨끗한 체크아웃에서 이미지를 만들려면 이 로컬 아카이브를 별도로 공급해야 합니다.
+아카이브·체크섬은 .gitignore로 제외하며 바이너리 payload를 GitHub에 올리지 않습니다. 포함 내용은 두 패널의 터치 펌웨어, GPU/VPU, ADSP/CDSP MDT/segments/DTB, Lapis Wi-Fi BDF/BT, 순정 ACF, DSP 라이브러리, 전체 SSC 설정, QRD ACDB입니다. 카메라 센서/개인 지문 정보·기기별 persist 보정 자료는 포함하지 않습니다.
 
-## 소스 위치와 남은 확인
+`tb520fu-firmware.sh`는 정확한 manifest 파일 집합과 해시를 확인한 후 설치합니다. 아카이브가 없으면 중단하며 Y700 펌웨어를 받지 않습니다. QRD용 공용 BDF가 기기의 persist 보정을 대체하지는 않습니다. 다른 순정 릴리스라면 해시만 바꾸기 전에 프로토콜·펌웨어 ABI를 검토해야 합니다.
 
-- `packages/kernel/patches/0820-*`: NT36532 패널 및 순정 명령 배열.
-- `packages/kernel/patches/0821-*`: NT36532 SPI 터치, 펌웨어 파서, 다운로드, 복구 및 전원 상태 전환.
-- `packages/kernel/patches/0822-*`: KTZ8866 두 칩의 밝기·초기화 동기화.
-- `packages/kernel/patches/0823-*`: msm DSI의 패킷당 슬라이스 수 및 SCR1 테이블 선택. 새 DT 속성이 없는 기존 보드는 종전 설정을 유지합니다.
-- `source-manifest.json`: 순정 실행 DT와 GPL 터치 소스의 SHA256.
-- `firmware-manifest.json`: 사용하는 순정 펌웨어의 SHA256 및 설치 경로.
+## DSP·센서 런타임
 
-**확인되지 않은 항목:** 실제 DSI/DPU SCR1 동작, PLL/PHY 타이밍, 두 링크의 화면 정합, 백라이트 전원 순서, 터치 방향·복구·절전 복귀, 기본 부팅 경로. 정적 패치 적용 확인은 컴파일 또는 하드웨어 동작 확인을 대신하지 않습니다.
+ADSP 라이브러리는 `/usr/share/qcom/sm8650/Lenovo/tb520fu/dsp/adsp`, SSC JSON은 `sensors/config`, 설정은 `sensors/sns_reg.conf`로 설치합니다. hexagonrpcd의 실제 파일 맵에 맞춘 경로입니다.
 
-순정의 30/60/90/144 Hz, HDR, HBM, ESD/TE 화면 복구, 펜 입력은 아직 구현 범위에 넣지 않았습니다. USB-C/DP, Wi-Fi/BT, DSP, 스피커/마이크, 센서, 충전 및 배터리는 후속 포팅 대상이며 TB321FU 노드를 활성화해 대체하지 않습니다. 완성된 TB520FU 배포 이미지나 설치 지원으로 표시하지 않습니다.
+`tb520fu-sns-init`은 `/run/tb520fu-sns`에 virtual root를 구성하고 stock `sns_reg_config`에 `sensor_tp=Lapis` selector를 추가합니다. socinfo는 실제 `/sys/devices/soc0`에서 읽고 stock QRD 플랫폼 이름은 값이 없을 때만 보완합니다. daemon 패키지가 쓰는 `/var/lib/qcom-sns/persist/sensors/registry`와 동일한 경로를 사용합니다. 첫 실행에서는 이 태블릿의 persist를 **ro,noload**로 마운트해 registry만 로컬 상태 디렉터리에 복사합니다. persist 파티션을 수정하지 않습니다.
 
-이번 작업의 정적 확인: 기존 관련 패치가 반영된 Linux v7.2.6 소스에 0820…0823을 `patch -F0`로 적용했습니다. Tianma on/off 118/13개, BOE on/off 100/12개의 명령과 지연이 순정과 일치합니다. 두 터치 펌웨어의 16개 파티션 범위, 아카이브의 다섯 파일 SHA256, 셸/Python 문법, DT 라벨 참조도 확인했습니다. 컴파일·DTB 생성·이미지 생성은 하지 않았습니다.
+기존 `packages/tb321fu-sensors`는 공유 libssc/hexagonrpc/iio-sensor-proxy 패키지 소스의 역사적 디렉터리 이름입니다. TB520FU에는 별도 조건의 서비스와 새 IMU 이름/ID를 사용하며 Y700 하드웨어 서비스는 활성화하지 않습니다. 센서 firmware가 올라도 표준 proxy와 OEM Hall/SAR/presence 정책은 별도 작업입니다.
+
+## 오디오 토폴로지
+
+`audio_topology/SM8650-TB520FU.m4`와 `audio_topology/tb520fu/`에 이 카드의 소스를 추가했습니다. 토폴로지 템플릿은 source-manifest에 기록한 upstream commit으로 고정합니다. 향후 이미지 빌드 단계 `tb520fu-audio-topology.sh`가 `/usr/lib/firmware/qcom/sm8650/Lenovo-Yoga-TB520FU-tplg.bin`을 생성하도록 연결했습니다. **이번 작업에서는 이 스크립트나 m4/alsatplg를 실행하지 않았습니다.** UCM의 PCM0/1/2/3은 각각 헤드폰/스피커/캡처/DP와 맞춥니다. DSP 그래프·TDM 슬롯/클럭·6개 ACF 적용·마이크 ADC 경로는 실기기 검증이 남습니다.
+
+## 소스 및 검토
+
+- `0820` 패널, `0821` 터치·펜, `0822` 두 KTZ8866, `0823` DSI DSC packet/SCR1.
+- `0824` AW882xx ACF/ath12k BDF 선택 및 Y700 graph40 quirk 범위 제한.
+- `0825` Lenovo pogo serdev 키보드·트랙패드.
+- `0826` 실제 PMIC HV haptics GPL backend와 Linux FF 연결.
+- `0827` Goodix 전원/리셋/IRQ 제어. 보안 인증 프로토콜은 포함하지 않음.
+- `stock-peripherals.json`: 순정 배선 추출. 노드 존재와 장착 여부는 구분.
+- `live-hardware.json`: 식별자·개인 보정값을 제외한 ADB 관측.
+- `source-manifest.json` / `firmware-manifest.json`: 원본 출처·해시.
+
+정적 확인은 패치 `-F0` 순서 적용, DT include/label/endpoint 상호 참조, 펌웨어 파일 집합/해시, Python AST 및 shell syntax를 대상으로 합니다. 문법 검사에도 컴파일러/dtc를 사용하지 않습니다. 검토 결과는 `static-review.json`에 기록합니다. 이 확인으로 부팅, 패널 타이밍, 터치 방향, DSP/충전/절전/발열 동작을 증명하지 않습니다.

@@ -1,0 +1,208 @@
+{
+  "date": "2026-10-09",
+  "kind": "source-only static review; no build or Linux boot",
+  "kernel_base": "v7.2.6",
+  "checks": {
+    "stock_panel_commands": {
+      "tianma": {
+        "on": 118,
+        "off": 13
+      },
+      "boe": {
+        "on": 100,
+        "off": 12
+      }
+    },
+    "touch_firmware_partition_bounds": "both stock variants passed",
+    "kernel_patch_application": {
+      "count": 111,
+      "command": "patch -p1 --batch --forward -F0",
+      "failures": [],
+      "patch_sha256": {
+        "0002-qcom-dispcc-sm8550-Fix-disp_cc_mdss_mdp_clk_src.patch": "ea99076424067acf50727da1f914f7bdba91698841ff616e94cf41bb9cca5002",
+        "0004-drm-msm-a6xx-Enable-IFPC-on-Adreno-740.patch": "cd5a9038a0f0987a7ac1bcfb7c29e24393e1cc342f8cc06bd7277a9047f42eed",
+        "0010-msm-resource-cleanup.patch": "2f65adf838a3c387485cfea049c7667694556c49d2fd817490c4192580ee9a13",
+        "0048-drm-msm-dsi-reparent-byte-pixel-src-to-xo-on-disable.patch": "9f76b9e22fa631e6abeff64aaa06edf04e5e683bd4ab45c788887dde477e37ca",
+        "0048a-drm-msm-dsi-round-byte-clock-rate-after-reparenting-to-PLL.patch": "a965ae008e2a6f25afaeedde28191f54c2451926b506bc5f2712f6751330bea1",
+        "0048b-drm-msm-dsi-fix-pll-init-in-bonded-mode.patch": "2465600a79b78c043ba6c198da9b8ccc3dd86b30a757cc0563d2d13449d074d9",
+        "0049-drm-msm-dpu-panel-opt-in-8bpc-dither.patch": "cf1c9198a78c4a95e6b08c4fbb66ae3c509eddb05d3da35fb685342dfa3d99e6",
+        "0066-drm-msm-dpu-enable-inline-rotation.patch": "61c554aa6ee1c0b3f5f9054888a62eecb8ab26d87904cd6d1556fb8dc92272a3",
+        "0068-drm-msm-dpu-lutdma-dspp-igc-gamut.patch": "2186d933e41f97d7a1e75e79bd7b115fc5499797b6c552c1b03cb3e25c78a608",
+        "0069-dt-bindings-display-msm-dpu-lutdma-reg.patch": "56c5169ee9ef065f8f43c0a4fc42c3973456904317e456050e470a2c43007a6a",
+        "0076-drm-msm-dpu-expose-abgr-xbgr-2101010-on-planes.patch": "8ea7232674056632bbcf694ce135d708a8cd236294bafe83ff241adcf30e8613",
+        "0077-drm-msm-dpu-plane-igc-3d-lut-color-pipelines.patch": "1f3261fa119cb5ce846e04ddccdca78e01fa882bfebdae03684586b927b2f5a8",
+        "0078-drm-msm-dpu-fix-vblank-timestamps-on-command-mode-panels.patch": "20b3f2c4968ac3852eb19b944788e8b18a07d62d4d87ad49b20220efd307b2fa",
+        "0016-rp5-smooth-brightness-adjustment.patch": "3eb20200713f2ba98cf341f580f79b197a143d059382207c734212dc2ba40164",
+        "0059-drm-panel-add-brightness-levels-helper.patch": "56ba0b005f8816a473bc1702197aecebd5a1b38c1a2ee579139a106eded058bf",
+        "0030-input-rmi4-add-reset-gpio.patch": "4dd452bd83501731dfb497b00e40925c39726fb79939af2e007e5f4657dde449",
+        "0032-rmi4-silence-spam-irq-errors.patch": "ef3950732e0db352477b8852558743b4791ac8f67ee9ed7f46d5115768aa7852",
+        "0054a-dt-bindings-input-goodix-document-input-device-label.patch": "f976cc22a36968a1350b1de591cbbbf759c62c73acf2d76aea199751724aa1a3",
+        "0504-Enable-64-bit-processes-to-use-compat-input-syscalls.patch": "047d76219aa62239c3e2399d5e36dd54e243008f156b5c6840fa8162c44b6e4e",
+        "0505-arm64-emulate-unaligned-atomics.patch": "7ed5edbb81296ba50b50bf1f50a6fe5a83cb1967e65075aca95b4cec10eea43e",
+        "0505a-arm64-unaligned-atomics-cover-the-load128-store-exclusive.patch": "aca19e20143048901263ef66953b7922cddeba60091b2e589caa79a0713d7069",
+        "0506-usbcore-add-interrupt-interval-override.patch": "700d58bdd4c5d783e034562ef4f3dd413e0ded9265942d0b66758006efd0cc9a",
+        "0071-HACK-fix-usb-boot-hang.patch": "adf18202255844dd7e86a7a603133c925e5bb5f0bcbd389b218c1ff2ad37097f",
+        "1006-tty-serial-qcom-geni-mask-non-console-irq-on-suspend.patch": "f65f5524cce5f3cde8ae598aa2272f5a6f5c96975b5e8d11b9396aecba76db4a",
+        "0534-serial-qcom-geni-add-force-suspend-resume-to-system-sleep-callbacks.patch": "0f2e47476b64ab22658319f7e8f120675cd9fa161f1c9c11b73fa1ca24289941",
+        "0059-ASoC-aw88395-lib-skip-monitor-sections-in-V1-ACF-parse.patch": "4055449eb300a0252f29543d8af9094e96dbfd46ae5fbddb7280dfbddec39e4f",
+        "0063-ASoC-wcd939x-route-usbss-on-integrated-jack-insert.patch": "9625a948173dcefa1680c0e709f4fd58d60d20d2a20b3f77050ba3d3c622a347",
+        "0064-ASoC-wcd-mbhc-clear-stale-jack-report-on-mechanical-removal.patch": "14d34fe40a3ee3649b95fb83a5aacc8ce585439d078c2c3abe6c496d62f3db45",
+        "0036_ASoC--qcom--sc8280xp-Add-support-for-Primary-I2S.patch": "faec2827d9ea69d69d8ce76de4bfc95c55cf70232a6a4f5245d0aae272450d2c",
+        "0618-drm-msm-dp-dont-fail-audio-prepare-when-display-off.patch": "af1682a3443e62f29c7256dcf9a4b9d4675567846b9f8089f8fce189459fb01c",
+        "0619-drm-msm-map-submitqueue-priority-onto-high-low.patch": "c3784f967908879afbc992a97bd2568be48e1cd6bbc1787c7613b8d89d581abb",
+        "20260424_neil_armstrong_arm64_dts_qcom_sm8_456_50_add_missing_cx_power_domain_to_gcc.patch": "0ee9bae28ed1b0f23ab43e9fec747d40ff4104cfd8c68f8115e102ab7819ec54",
+        "v9_20260729_qualcomm_crypto_qce_runtime_pm_interconnect.patch": "435e1b2438500ba058caa7f0f37f1b15eb8eab761262e79fbda6d012e6741661",
+        "0504-mailbox-qcom-ipcc-mask-summary-irq-for-suspend-to-ram.patch": "0d415b6ba98460508f639d90d5e31ad0de6330586f8332a619a64152651de0f2",
+        "0505-msm_gem-lock-before-put_iova_spaces.patch": "a47f5c70e708fbaa0ed59900a7848fc8b8a1504d2a1e32bdd6f36ac770a6b6f2",
+        "0204-thermal-qcom-tsens-mask-lower-threshold-irqs-across-suspend.patch": "efecafd87aa73b16800fb138ab34a4e94f4575c65852bd22c6f7f344ff0be701",
+        "0510-soc-qcom-ice-unwind-clocks-on-resume-failure.patch": "7dd3567c49a705d441a8f86278df208c3aa52ae30522c6d6c178a937f1173063",
+        "0511-scsi-ufs-qcom-reenable-irq-on-host-reset-failure.patch": "f031ae43ce6447be44f228f090c73fa4a09dcb8c7e427304ee787fbeb275a2b5",
+        "0533-scsi-ufs-ufs-qcom-enable-only-lane-clocks-in-lane-clock-apis.patch": "4f4d02f3cbe564558fc6f35e5426e9748494818e9bd1dc29a59e842cfce18b70",
+        "0535-scsi-ufs-core-fast-abort-unsupported-query-idns.patch": "25ff059a173fd1d494f37350bce93b5c06e3ac8d1b8cb194bb4acf468372184a",
+        "0536-scsi-ufs-core-dynamically-disable-timestamp-on-unsupported-devices.patch": "44c265708f08357d3ae06f866086e1166962e984c680cf8b8dc8c08016dbce0a",
+        "0512-PCI-qcom-skip-L23-ready-poll-on-SM8550.patch": "0e326bd1ee0e7c01324d99a95c29000e6f2bb7ea75001dc95bfcfb5917ef8b26",
+        "0513-PCI-qcom-honour-an-opp-suspend-opp-as-the-non-s2ram-memory-floor.patch": "b18a150063a99f977aa447b7e6dcf22c68f81c336ebf65fa82b72a93b0e101ed",
+        "0522-PCI-host-common-let-only-endpoints-veto-d3cold.patch": "00ec7ad7009f9553fe8df551588fcc688e47273e0e94f435eb7c99f361fff4da",
+        "0523-regulator-qcom-rpmh-add-suspend-state-support.patch": "9b41b43e8205cd8cb7dcdc157d8b58dab12abcb491a1b60013a30e385fd5c54f",
+        "0524-regulator-core-apply-mem-state-for-s2idle.patch": "86ccb3f75b89920e289f16609eca288eb4bb3d6f93ffea7a267631280379037c",
+        "0525-regulator-core-log-missing-suspend-configuration-at-debug.patch": "cc9e662925f4ec1615f58deca76630090d00b1b7b6ac0c42fdfc619651c5a1b8",
+        "0526-regulator-apply-state-mem-in-s2idle-only-for-opted-in-drivers.patch": "b70c52de470f40115e2ec406517cdb10521eba699ee77a90d6401a1d62a2b4c3",
+        "0514-PCI-qcom-honor-iommu-map-cell-count.patch": "bf794c35f09fe66748fca77c2d80f15954f405e49e4f24d0cd0548ec8c70b9d2",
+        "0514a-of-property-honor-iommu-cells-in-iommu-map-devlinks.patch": "937c5fae7bab5d1dcb5764f6c81be79ab45040b1dae81be56833bcce92608f9b",
+        "0001-pcie-update-sm8550-dtsi.patch": "5467c43ea3bfbb4721807298f4bd5e4b349479344375b8721ceb68a38445484a",
+        "0520-arm64-dts-qcom-sm8550-add-a-pcie-suspend-opp.patch": "ecea968e87554e230c838c72ac17b8348dc70d21a1dd87a2c2b0b1e2a26ae6f5",
+        "0527-arm64-dts-qcom-sm8650-add-a-pcie-suspend-opp.patch": "fc83ea947e5145d33b398b67a4d84d8e6c24580d2288c912fb54ce5117d1f0be",
+        "0120-20250728_konradybcio_gpu_cc_power_requirements_reality_check.patch": "108ce07bc39790db28eb8bd5dc47c341b9512b92d4b31fbff560cc8be3a26a19",
+        "0121-pmdomain-qcom-rpmhpd-presync-floor-gmu-rails.patch": "258d73a2428ccf4a063b00bddfab3a8ab29ea51f822dde75b4610ffc629fc211",
+        "0122-interconnect__qcom__sm8550__Enable_QoS_configuration.patch": "e2e20226118e5e7bf713b4d796b4f6c317a32c6b68720798943089e620e459d8",
+        "0200-ASoC-wcd938x-add-DMIC-DAPM-inputs.patch": "181656cf853c8449786e1f601982640ba396be35cf22a24eb4cd0ab2ab6814b7",
+        "1020-wifi-ath12k-send-the-computed-scan-priority-to-the-f.patch": "ffb690a2ca55c67897d44b647fb44b896bf618fa54a015eafdf4e8f0e61ae675",
+        "1021-wifi-ath12k-convert-scan-timeout-to-wiphy-delayed-work.patch": "a9b9d631dfa47c9a31ccd8cca649df793638608707ffdaa0b620b755a4d7d898",
+        "0501-ROCKNIX-fix-wifi-and-bt-mac.patch": "2b36c5c40b77c404ebfb892c371b027853608731ca721b8e201441f430633231",
+        "0503-ROCKNIX-battery-name.patch": "10b8dfd7249cdeabc338feea52c84f077c4dbd7ff28bf16aa7c67537088b373d",
+        "0901-power-supply-qcom-battmgr-fix-charge-unit.patch": "77761893b91799a858b4e6c71b4fcd0723df95846fd487830eeb483c66494d28",
+        "0902-power-supply-qcom-battmgr-expose-charge-now.patch": "700aa58b7e3b80ac0afa4a8eab5e3617bbeda2c4f75656fc58bedec543d96b67",
+        "0903-power-supply-qcom-battmgr-expose-the-charge-current-limit.patch": "287094a2a1f89a535d5e41302545dbeaefdbad096485a87b4c39de28f0b3c806",
+        "0540-arm64-signal-reapply-the-ssbs-policy-on-sigreturn.patch": "cf1e3f5e1be26135d1b82ee6dcea17bed29d01d64a93203b05147f124ad9c925",
+        "0001-pcie-update-sm8650-dtsi.patch": "cb840b0737d4b4438844dcc19956f43038e9ca6d2860b9f4aa989bf5091dc733",
+        "0006-add-hw_params-callback-function-to-drm_connector_hdmi_audio_ops.patch": "66f036c0eb139e651783fb0f799cd46b211bd8f896b0c61663828375c094b877",
+        "0007-ASoC-qcom-audioreach-compute-active-channel-maps.patch": "51027a187c58d19b163fd9c455006fca2dd122d77f55b2628161692f5e31bbf2",
+        "0008-ASoC-dt-bindings-qcom-sm8250-Add-Ayaneo-Pocket-S2.patch": "7551a8564fae0626da48fba9ea0b434bcbc30e315882905b2293e01c997b22df",
+        "0009-ASoC-qcom-sc8280xp-add-Ayaneo-Pocket-S2-card.patch": "587398c55a1e223a21f2f27a6b67835ad6e98eefaddebcc75d68a8df2475022e",
+        "0010-ASoC-qcom-add-KONKR-Pocket-FIT-WSA2-card.patch": "c6d8fe8581d33a0d05f8c31aec27b5471ff99e86349009ee93cc05bb4635dbb1",
+        "0011-ASoC-qcom-audioreach-use-wsa-interface-for-sm8650-wsa2.patch": "537f382befd64bcb031c2dc419c26be2321bfcca5bd5f694e28b01d809eb310e",
+        "v2_20260420_neil_armstrong_arm64_qcom_sm8650_misc_enhancements.patch": "b7f49172b5dbc3e49df7013e9c2d739f708a811c1f17b9716ed0620fe9e6bb2d",
+        "0001-msm-dsi-restore-wide_bus-bpp-calculation.patch": "4aedba14954047d9e24484b9beeeca61b294f63d3b8d45eb24acc11525986ff4",
+        "0012-ASoC-qcom-q6asm-dai-Change-some-default-periods.patch": "d82a7fd15d5c684b38cb015dce3babde10bde97f4b621792327edbdea124916e",
+        "0062_wsa881x-shared-powerdown-gpio.patch": "9142e09bfd5ad8341ac14f49d2f9abdd03b5fe40f3018143184c8d46cad1925b",
+        "0100-revert-force-16bit-audio.patch": "186da4d67e136ac5cf6843753a4765dde5040e92ecd380306e822fa46cf44099",
+        "0300-batocera-fix-headphone-jack-detection.patch": "0326e9b0bb935d9a5616c3260b4339716432d2d9d73813e8b54ff8c51e87836d",
+        "0304-ASoC-wcd938x-treat-failed-zdet-ramp-as-floating.patch": "45f1adc1921ad9842d5dbc39c9ebc3db9c9c4b7f746412aeab62bbd1df14c1dc",
+        "0305-backlight-qcom-wled-always-disable-ovp-irq-at-probe.patch": "00a8954dfc43c1a933fa7e5a8deb1fbc936f037db3eada3b9f6ec42d25ced8ce",
+        "0040-wifi-ath12k-send-QDSS-config-when-CNSS_QDSS_CFG_MISS.patch": "eaaeed53463f90d7446b91025f5637eaba92b5ecb7a26247865f850c12d623d6",
+        "0041-wifi-ath12k-disable-CNSS_QDSS_CFG_MISS_V01-for-the-W.patch": "9df0891e92d03e5c7d7dfd2a7980928a3adcdb662a220366434a4d0abdbca407",
+        "0044-clk-qcom-gcc-sm8750-Do-not-turn-off-PCIe-GDSCs-durin.patch": "e00dc9b84ad652d8d00b1688b371740960b8243255c8bc14cf4d865f1204a7f2",
+        "0066-scsi-ufs-ufs-qcom-add-sm8750-compatible.patch": "2f47f705b3e076d8b36a6ef4cd25762214bc012614942a665f480901f3317a41",
+        "0509-soc-qcom-pmic_glink_altmode-defer-until-mux-switch-ready.patch": "3af67fce1d361803cf2f1e8b9893ef3b83d53d00b551f00258b856be7f38696d",
+        "0517-usb-typec-mux-dont-swallow-EPROBE_DEFER.patch": "80e9cd6dfd827745999d29f682f3c562442e3d86398ee8772a8c012fcd7dc480",
+        "0519-usb-typec-ucsi-clear-USB-role.patch": "30e21e016c6da3e136032514fbbe4221072ae3a99ddb6f62f142c2d67987cd7a",
+        "0603-ASoC-codecs-wcd939x-keep-the-codec-resumed-while-a-ja.patch": "9170510cd4a8f89957ada0fc8a67858937dbf300f089d34ed0147d93afd0a7a2",
+        "0060-ASoC-qcom-sc8280xp-enable-MI2S-bit-clock-on-BE-startup.patch": "e4533b3ca7bf937e0ace644554119afce1632da685849d42138ae908440477f6",
+        "0072-ASoC-lpass-rx-macro-add-HPH-PCM-mode.patch": "c8d7d71e798922753f019dda6c3a43c83f5539555c8600ef6639d85f4137e105",
+        "0073-ASoC-wcd939x-add-HPH-PCM-HiFi-mode.patch": "f55dad5d36083dd3e5185e040e9f75ee10f51abc87a5f6d536c9be27a609f72d",
+        "0074-soundwire-qcom-PCM-data-port-format-enable.patch": "49701d9ef1f7a68bc8abd1ede61528fe635155c1cfeea691628f00dfa997adb7",
+        "0612-ROCKNIX-odin3-q6apm-start-mi2s-port-at-prepare.patch": "9f583b47b5b64798e121ef33e15fc437ef0f3d66d2e87343211a0faafed42711",
+        "0613-ASoC-q6apm-scope-prepare-start-to-MI2S.patch": "2bb83d5b77b1e0d798f57e0e8b853b880834c8a8daf1e84dac1907dd184cede1",
+        "0528-ASoC-qcom-sc8280xp-suspend-the-card-and-its-streams.patch": "9e400f089a68fcfa56b8fa7f7a47031018f9d191c4c15f18f426d1ca690cd6c7",
+        "0529-ASoC-qdsp6-q6apm-fail-the-graph-open-when-the-DSP-rejects-it.patch": "f981b50ca24eb92dc1caa6807d8e9ddceadd2aed5c156757759a55b6d059a854",
+        "0530-ASoC-qdsp6-release-AudioReach-graphs-across-system-suspend.patch": "68cb19d6a7e8e25106fd2234e7430fb4302f94b5834e8a4414f3cb294a077f1f",
+        "0802-ASoC-codecs-add-Awinic-AW882xx-smart-PA-driver.patch": "54e06be7e50a2ef10f28580d72701c85e2364128fb40e58b1e470bd4cfeebd34",
+        "0804-drm-msm-dpu-tb321fu-dsc-width-and-resume-fixes.patch": "3a4dd44847801777bc0cd1a2d124b6a0c77ea66d8dae6f7ee02d6d9064ea0d55",
+        "0807-usb-typec-mux-add-parade-ps5169-redriver-guf296.patch": "cd8082bb2b8f5644afbf9a6a81a4414ca6e1b431092068ebf58f756411a53af1",
+        "0808-ASoC-qcom-audioreach-secondary-TDM-for-lenovo-tb321fu-speakers.patch": "916893d014a7eef4c9256e0d2d9d4432bc4e5dcd0286ea2995b12b204092e55d",
+        "0812-drm-msm-dpu-validate-mode-clock-on-the-active-width.patch": "e49a372f1c34f772dc28c30d4af2e8a0de650054f48c6c91273941d92abffcfe",
+        "0814-drm-msm-dpu-dont-wedge-the-ctl-when-tearing-down-a-video-encoder.patch": "42ffb9afe0a556f36ecf34ad3e4227d69fc08c75acb60e2a04d4fddce00640a8",
+        "0820-drm-panel-add-tb520fu-nt36532.patch": "2e07ca294454de202fce54d23a92b3dd29ca19833fe236d37b8f484cffefb46d",
+        "0821-input-touchscreen-add-nt36532-spi.patch": "cd2549cc69a47e0b1cd117798a55c749ed8d195c1e004a17eee6b197b4a82490",
+        "0822-backlight-add-tb520fu-dual-ktz8866.patch": "416a3ee15553038782d1cabeef6ec2fb55e1524bdbbf677e31574eca0a034ddf",
+        "0823-drm-msm-dsi-tb520fu-dsc-packet-and-scr.patch": "8f286738d9405d14d0bdde3996bd8ebf12ced85a65eb5383bd52ef3d18a4f48e",
+        "0824-tb520fu-use-stock-amp-and-wlan-firmware.patch": "6853877332472ecae950736dbd3a49da3f7cc885adeb8d03b6ee7451c03b1472",
+        "0825-input-add-lenovo-yoga-serial-keyboard.patch": "21027ff9fea127923a66623f0a460220a08e2aad2fd9aff02ac89defefc633b5",
+        "0826-input-port-tb520fu-pmic-hv-haptics.patch": "1c444d0d4839edca934309877319df048797ba6c0feae3d9fa79168f8118ca77",
+        "0827-misc-add-tb520fu-goodix-power-irq-control.patch": "158b7a019a4c0b747246bd75fafe774c078cab9a6cb6ca8308645562b8d88eaf"
+      },
+      "all_hunk_headers_accounted_for": true
+    },
+    "dt_label_references": "all board and included SoC/PMIC references found",
+    "dt_graph_endpoints": {
+      "reciprocal_pairs": 7
+    },
+    "stock_reserved_memory": {
+      "gpu_micro_code_mem": [
+        "0x9b09a000",
+        "0x2000"
+      ],
+      "camera_mem": [
+        "0x9b300000",
+        "0x800000"
+      ],
+      "video_mem": [
+        "0x9bb00000",
+        "0x800000"
+      ],
+      "cdsp_mem": [
+        "0x9ca00000",
+        "0x1400000"
+      ],
+      "q6_cdsp_dtb_mem": [
+        "0x9de00000",
+        "0x80000"
+      ],
+      "q6_adsp_dtb_mem": [
+        "0x9de80000",
+        "0x80000"
+      ],
+      "adspslpi_mem": [
+        "0x9df00000",
+        "0x4080000"
+      ]
+    },
+    "python_ast": 2,
+    "shell_syntax": 6,
+    "firmware_archive": {
+      "file_count": 274,
+      "sha256": "315f7d7f349fef84fbe05211fbbc55eaad3d93c750326bc80baca6e849da4328",
+      "all_payload_hashes_verified": true,
+      "committed": false
+    },
+    "new_driver_kconfig_kbuild": "passed",
+    "kernel_config_unique_assignments": 338,
+    "kconfig_symbol_definitions": {
+      "defined_symbols": 21730,
+      "active_fragment_symbols": 257,
+      "unknown": []
+    },
+    "inputplumber_yaml": "PyYAML parsing and expected source/match counts passed",
+    "fork_push_hook": "dedicated fork branch accepted; other repository and main branch rejected",
+    "qup_buses": "physical WRAP1/WRAP2 parents enabled; board I2C/SPI GPI DMA provider enabled; pogo UART uses mainline qupv3_id_1"
+  },
+  "not_performed": [
+    "compiler invocation",
+    "make/Kconfig resolution",
+    "dtc/cpp/DTB generation",
+    "m4/alsatplg topology build",
+    "container/image build",
+    "Linux boot or hardware functional tests"
+  ],
+  "reviewed_source_sha256": {
+    "packages/kernel/dts/sm8650-lenovo-tb520fu-boe.dts": "a79f796db38f1d54e17c95ac1267b4ff4dfa6d8af2eed353c8527b8e471a861c",
+    "packages/kernel/dts/sm8650-lenovo-tb520fu-peripherals.dtsi": "d7b49cd9ea23b5bdb2dbd7712b7ad005cb36f1d7118c55270d6f57db0c4fe4cf",
+    "packages/kernel/dts/sm8650-lenovo-tb520fu.dts": "0c61b37f9e91ea6fe7e3fecd0954fdda738a6ac77b3d27b730557b1a5fa3fdc4",
+    "packages/kernel/dts/sm8650-lenovo-tb520fu.dtsi": "7724b636694c568b7484854b7df1f42a4ff5c12a0ac644c8a85dcad5e15c0104",
+    "packages/kernel/config/armada-kernel.config.overrides": "b743d08a53ef08b1852d3568f9608fd3c79155129fcf0c407baf50a864a8f449",
+    "audio_topology/tb520fu/module_tdm.m4": "46c31a9cb021c0445f4b6d612d180bf52921d7b8cc23825f4a09eb67c6235d7d",
+    "audio_topology/tb520fu/subgraph-device-tdm-playback.m4": "1098906871fcfae5d475307d4370dec99a2947e0c99f8b3f293d276d12e986a0",
+    "audio_topology/SM8650-TB520FU.m4": "e0b471d1311f33ef54d10287146e472c191573c1a61c7f2c7080db6e14357611",
+    "system_files/usr/libexec/tb520fu/sns-init": "66ea6a205d20d4bc5d6e8bd58c1d9aba04fa6c63de123608ae913360e0c961d5"
+  }
+}
