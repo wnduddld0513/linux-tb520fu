@@ -4,7 +4,9 @@ Lenovo **Yoga Tab Plus / YOGA Pad Pro AI元启 (TB520FU, lapis, Snapdragon 8 Gen
 
 순정 DT, Lenovo GPL 커널·벤더 소스, 순정 펌웨어와 읽기 전용 ADB 장치 정보를 바탕으로 커널 드라이버·디바이스 트리·펌웨어 경로를 옮겼습니다. 저장소에는 Armada/Fedora bootc 기반 OS 이미지 구성도 포함되어 있습니다.
 
-**현재는 소스 포팅 단계입니다. 빌드, DTB·이미지 생성, Linux 부팅 및 하드웨어 동작 검증은 하지 않았습니다. 아래의 ‘구현’과 ‘연결’은 소스 반영을 뜻하며, 사용 가능한 완성 이미지나 동작 확인을 뜻하지 않습니다.**
+**SteamOS 통합에서 커널 7.2.6·모듈 1,594개와 Tianma/BOE DTB 컴파일을 완료했습니다. 빌드한 커널 코드의 고정 commit은 `54ed573a816532658f411e0cabf93072740976e2`입니다. 실기기 Linux 부팅·하드웨어 동작은 아직 검증하지 않았으며, 아래의 ‘구현’과 ‘연결’은 동작 확인을 뜻하지 않습니다. Armada/Fedora bootc 이미지 전체 빌드는 별도로 검증하지 않았습니다.**
+
+전용 UEFI boot.img·ARM64 런타임·SteamOS USB 이미지와 파일 검사 결과는 [SteamOS TB520FU 시험판](https://github.com/wnduddld0513/SteamOS-ARM-Port/releases/tag/tb520fu-experimental-20261010) 및 [빌드 기록](https://github.com/wnduddld0513/SteamOS-ARM-Port/blob/tb520fu/docs/tb520fu-build-review.json)을 참조하세요. 기기에 플래시하거나 재부팅하지 않았습니다.
 
 ## 디스플레이·터치
 
@@ -77,7 +79,7 @@ git commit -m "Describe the TB520FU change"
 git push origin tb520fu:tb520fu
 ```
 
-`tb520fu` 브랜치 푸시는 이미지 빌드 워크플로의 push 조건에 포함되지 않습니다. 현재 검토는 소스·배선·패치·펌웨어 해시를 대상으로 하며, 빌드나 Linux 실기기 검증을 대신하지 않습니다.
+`tb520fu` 브랜치 푸시는 이미지 빌드 워크플로의 push 조건에 포함되지 않습니다. 정적 검토는 소스·배선·패치·펌웨어 해시를 대상으로 합니다. 컴파일 결과는 위 SteamOS 빌드 기록을 따르며, Linux 실기기 검증을 대신하지 않습니다.
 
 ## 기반 프로젝트·라이선스
 
