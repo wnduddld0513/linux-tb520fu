@@ -1,10 +1,7 @@
 ---
 name: Build images
 on:
-  push:
-    branches:
-      - main
-      - staging
+  # Image builds are manual for the TB520FU port.
   workflow_dispatch:
 
 env:

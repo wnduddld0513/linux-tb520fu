@@ -24,10 +24,10 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       UPSTREAM: https://github.com/enij90/armada-tb321fu.git
     steps:
-      - name: Check out tb520fu
+      - name: Check out main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: tb520fu
+          ref: main
           fetch-depth: 0
 
       - name: Merge upstream main
@@ -85,7 +85,7 @@ jobs:
             echo "Check the package patches still apply before merging: the merge itself"
             echo "only proves the files merge."
           } > body.md
-          gh pr create --repo "${GITHUB_REPOSITORY}" --base tb520fu --head "${BRANCH}" \
+          gh pr create --repo "${GITHUB_REPOSITORY}" --base main --head "${BRANCH}" \
             --title "Sync with enij90/armada-tb321fu main ($(date -u +%Y-%m-%d))" \
             --body-file body.md
 
