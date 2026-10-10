@@ -8,7 +8,7 @@ Stock motor voltage, resonance and SDAM are supplied by the board DT.
 diff --git a/drivers/input/misc/qcom-hv-haptics.c b/drivers/input/misc/qcom-hv-haptics.c
 --- /dev/null
 +++ b/drivers/input/misc/qcom-hv-haptics.c
-@@ -0,0 +1,6802 @@
+@@ -0,0 +1,6811 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Copyright (c) 2020-2021, The Linux Foundation. All rights reserved.
@@ -6783,6 +6783,15 @@ diff --git a/drivers/input/misc/qcom-hv-haptics.c b/drivers/input/misc/qcom-hv-h
 +
 +	haptics_ds_suspend_config(chip->dev);
 +}
++
++static const struct dev_pm_ops haptics_pm_ops = {
++	.suspend = pm_sleep_ptr(haptics_suspend),
++	.resume = pm_sleep_ptr(haptics_resume),
++	.freeze = pm_sleep_ptr(haptics_freeze),
++	.restore = pm_sleep_ptr(haptics_restore),
++	.runtime_suspend = pm_ptr(haptics_runtime_suspend),
++	.runtime_resume = pm_ptr(haptics_runtime_resume),
++};
 +
 +static const struct of_device_id haptics_match_table[] = {
 +	{
