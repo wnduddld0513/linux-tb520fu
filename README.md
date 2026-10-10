@@ -70,12 +70,12 @@ Stock firmware binaries are not committed to Git. Extract them locally and check
 ## Repository setup
 
 ```bash
-git clone --branch main https://github.com/wnduddld0513/linux_kernel_lenovo_tb520fu.git
-cd linux_kernel_lenovo_tb520fu
+git clone --branch main https://github.com/wnduddld0513/linux-tb520fu.git
+cd linux-tb520fu
 bash tools/setup-fork.sh
 ```
 
-The setup script restricts pushes to `main` in `wnduddld0513/linux_kernel_lenovo_tb520fu`. The pre-push hook rejects other repositories, branches, tags and deletions. Run the setup script for each new checkout. Explicitly bypassing Git hooks also bypasses this protection.
+The setup script restricts pushes to `main` in `wnduddld0513/linux-tb520fu`. The pre-push hook rejects other repositories, branches, tags and deletions. Run the setup script for each new checkout. Explicitly bypassing Git hooks also bypasses this protection.
 
 ```bash
 git add <changed-files>
