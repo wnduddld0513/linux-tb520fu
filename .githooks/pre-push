@@ -2,9 +2,9 @@
 # This WSL checkout publishes only the TB520FU branch to its own fork.
 set -eu
 case "${2:-}" in
-    https://github.com/wnduddld0513/linux-tb520fu|https://github.com/wnduddld0513/linux-tb520fu.git|git@github.com:wnduddld0513/linux-tb520fu.git|ssh://git@github.com/wnduddld0513/linux-tb520fu.git) ;;
+    https://github.com/wnduddld0513/linux_kernel_lenovo_tb520fu|https://github.com/wnduddld0513/linux_kernel_lenovo_tb520fu.git|git@github.com:wnduddld0513/linux_kernel_lenovo_tb520fu.git|ssh://git@github.com/wnduddld0513/linux_kernel_lenovo_tb520fu.git) ;;
     *)
-        echo "Push blocked: destination must be wnduddld0513/linux-tb520fu." >&2
+        echo "Push blocked: destination must be wnduddld0513/linux_kernel_lenovo_tb520fu." >&2
         exit 1
         ;;
 esac

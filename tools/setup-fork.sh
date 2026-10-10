@@ -8,7 +8,7 @@ if [[ "$(git branch --show-current)" != main ]]; then
     echo "Switch to the main branch before running this script." >&2
     exit 1
 fi
-fork_url=https://github.com/wnduddld0513/linux-tb520fu.git
+fork_url=https://github.com/wnduddld0513/linux_kernel_lenovo_tb520fu.git
 if ! git remote | grep -qx origin; then
     git remote add origin "$fork_url"
 fi
