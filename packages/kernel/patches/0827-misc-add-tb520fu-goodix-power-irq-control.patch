@@ -7,7 +7,7 @@ Keep power off until requested. Secure biometric transport remains a separate po
 diff --git a/drivers/misc/tb520fu-goodix.c b/drivers/misc/tb520fu-goodix.c
 --- /dev/null
 +++ b/drivers/misc/tb520fu-goodix.c
-@@ -0,0 +1,178 @@
+@@ -0,0 +1,180 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/* Goodix GPIO/power transport for Lenovo TB520FU.
 + * Reset and regulator timing adapted from Goodix (C) 2016, Lenovo 6.1.68
@@ -110,7 +110,9 @@ diff --git a/drivers/misc/tb520fu-goodix.c b/drivers/misc/tb520fu-goodix.c
 +static struct attribute *yoga_fp_attrs[] = {
 +	&dev_attr_powered.attr, &dev_attr_reset.attr, &dev_attr_irq_count.attr, NULL
 +};
-+ATTRIBUTE_GROUPS(yoga_fp);
++static const struct attribute_group yoga_fp_group = {
++	.attrs = yoga_fp_attrs,
++};
 +static irqreturn_t yoga_fp_irq(int irq, void *data)
 +{
 +	struct yoga_fp *fp = data;
@@ -162,7 +164,7 @@ diff --git a/drivers/misc/tb520fu-goodix.c b/drivers/misc/tb520fu-goodix.c
 +	if (ret)
 +		return ret;
 +	/* Publishing attributes last prevents writes after IRQ/resources are freed. */
-+	return devm_device_add_groups(dev, yoga_fp_groups);
++	return devm_device_add_group(dev, &yoga_fp_group);
 +}
 +static int yoga_fp_suspend(struct device *dev)
 +{
