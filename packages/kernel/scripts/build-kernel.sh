@@ -221,6 +221,11 @@ if [ -f "${KCONFIG_OVERRIDES}" ]; then
     rm -f "${frag}" "${merge_log}"
 fi
 
+# `make kernelrelease` never runs syncconfig (it is a no-sync-config target),
+# and the fragment merge above can leave include/config/auto.conf stale,
+# so the release query below would return the bare base version (7.2.6) on a
+# cold run and misname the archive. Regenerate the config cache first.
+make "${MAKE_ARGS[@]}" syncconfig
 KVER=$(make "${MAKE_ARGS[@]}" -s kernelrelease)
 echo "==> Kernel version: ${KVER}"
 echo "==> Compiler: $(sed -n 's/^CONFIG_CC_VERSION_TEXT="\(.*\)"$/\1/p' .config)"
@@ -276,6 +281,21 @@ if [ "${TB520FU_BUILD}" -eq 1 ]; then
         exit 1
     fi
     echo "==> TB520FU: CONFIG_DEBUG_INFO_BTF=y, pahole ${PAHOLE_VERSION_TEXT} (>= ${PAHOLE_MIN_VERSION})"
+    # The archive below is named from ${KVER}. If the release string ever
+    # stops carrying the merged CONFIG_LOCALVERSION again, fail here instead
+    # of after a full build when the wrapper cannot find its expected archive.
+    tb520fu_localversion="$(sed -n 's/^CONFIG_LOCALVERSION="\(.*\)"$/\1/p' .config)"
+    if [ -n "${tb520fu_localversion}" ]; then
+        case "${KVER}" in
+            *"${tb520fu_localversion}") ;;
+            *)
+                echo "ERROR: kernelrelease '${KVER}' lacks the merged CONFIG_LOCALVERSION ('${tb520fu_localversion}')." >&2
+                echo "       include/config/auto.conf was not regenerated after the fragment merge;" >&2
+                echo "       refusing to build an archive the wrapper will reject." >&2
+                exit 1
+                ;;
+        esac
+    fi
 fi
 
 # ---------- 6. Build ----------
