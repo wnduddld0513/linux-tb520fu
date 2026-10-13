@@ -1,0 +1,29 @@
+From: TB520FU port maintainers
+Subject: arm64: dts: qcom: tb520fu: define board oscillator rates
+
+The generic SM8650 DTS leaves oscillator rates to the board. Without
+clock-frequency the fixed-clock provider returns -EIO. The TB520FU DTBs
+omitted both rates, leaving downstream clocks without reference sources.
+Observed failures include empty CPU OPP tables, VIDEO_CC PLL timeouts
+and USB PHY initialization errors. Use stock running.dts rates: XO is
+76800000 Hz and sleep_clk is 32000 Hz, shared by Tianma and BOE boards.
+
+---
+--- a/arch/arm64/boot/dts/qcom/sm8650-lenovo-tb520fu.dtsi
++++ b/arch/arm64/boot/dts/qcom/sm8650-lenovo-tb520fu.dtsi
+@@ -12,6 +12,15 @@
+ #include "pm8550ve.dtsi"
+ #include "pm8550vs.dtsi"
+ #include "pmk8550.dtsi"
++
++/* Board oscillators from the stock TB520FU running device tree. */
++&xo_board {
++	clock-frequency = <76800000>;
++};
++
++&sleep_clk {
++	clock-frequency = <32000>;
++};
+ 
+ /delete-node/ &rmtfs_mem;
+ /delete-node/ &hwfence_shbuf;

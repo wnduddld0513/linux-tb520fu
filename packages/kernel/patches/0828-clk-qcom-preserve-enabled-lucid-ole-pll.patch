@@ -1,0 +1,28 @@
+From: Esteban Urrutia <esteuwu@proton.me>
+Subject: [PATCH] clk: qcom: alpha-pll: preserve enabled Lucid Ole PLLs
+
+Backport the enabled-PLL guard from the upstream display handoff fix.
+The TB520FU uses Lucid Ole display PLLs and can still scan out the
+firmware framebuffer while the clock driver registers.
+
+Upstream: 2295d6a84179bfe853244c8ef26d6f54b29959cb
+Link: https://lore.kernel.org/all/20260713-sm8450-qol-dispcc-v3-3-56fd05822270@proton.me/
+
+--- a/drivers/clk/qcom/clk-alpha-pll.c
++++ b/drivers/clk/qcom/clk-alpha-pll.c
+@@ -2373,6 +2373,15 @@
+ {
+ 	u32 lval = config->l;
+ 
++	/*
++	 * Preserve PLLs left running by the bootloader: disabling them here
++	 * can lock up an RCG still driving the firmware display.
++	 */
++	if (trion_pll_is_enabled(pll, regmap)) {
++		pr_debug("Lucid Ole PLL is already enabled, skipping configuration\n");
++		return;
++	}
++
+ 	lval |= TRION_PLL_CAL_VAL << LUCID_EVO_PLL_CAL_L_VAL_SHIFT;
+ 	lval |= TRION_PLL_CAL_VAL << LUCID_OLE_PLL_RINGOSC_CAL_L_VAL_SHIFT;
+ 	clk_alpha_pll_write_config(regmap, PLL_L_VAL(pll), lval);

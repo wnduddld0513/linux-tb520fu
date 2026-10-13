@@ -1,0 +1,47 @@
+From: TB520FU port maintainers
+Subject: [PATCH] drm/panel: nt36532: publish panel before attaching DSI links
+
+DSI attach can synchronously bind the MSM component master and look up
+this panel. Register the panel first to avoid a circular probe deferral.
+Initialize both links before either attach, and use managed panel removal
+so the DSI links detach before the panel is unpublished on probe failure.
+Report missing secondary hosts and attach failures with dev_err_probe().
+
+--- a/drivers/gpu/drm/panel/panel-novatek-nt36532.c
++++ b/drivers/gpu/drm/panel/panel-novatek-nt36532.c
+@@ -509,7 +509,7 @@
+ 	host = of_find_mipi_dsi_host_by_node(node);
+ 	of_node_put(node);
+ 	if (!host)
+-		return -EPROBE_DEFER;
++		return dev_err_probe(dev, -EPROBE_DEFER, "secondary DSI host\n");
+ 	p->dsi[0] = dsi;
+ 	p->dsi[1] = devm_mipi_dsi_device_register_full(dev, host, &info);
+ 	if (IS_ERR(p->dsi[1]))
+@@ -544,11 +544,16 @@
+ 		p->dsi[i]->mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST |
+ 					MIPI_DSI_MODE_LPM;
+ 		p->dsi[i]->dsc = &p->dsc;
++	}
++	/* Attach can synchronously bind MSM, which looks up this panel. */
++	ret = devm_drm_panel_add(dev, &p->panel);
++	if (ret)
++		return ret;
++	for (i = 0; i < ARRAY_SIZE(p->dsi); i++) {
+ 		ret = devm_mipi_dsi_attach(dev, p->dsi[i]);
+ 		if (ret)
+-			return ret;
++			return dev_err_probe(dev, ret, "attach DSI%d host\n", i);
+ 	}
+-	drm_panel_add(&p->panel);
+ 	return 0;
+ }
+ static void nt36532_remove(struct mipi_dsi_device *dsi)
+@@ -557,7 +562,6 @@
+ 
+ 	drm_panel_disable(&p->panel);
+ 	drm_panel_unprepare(&p->panel);
+-	drm_panel_remove(&p->panel);
+ }
+ static void nt36532_shutdown(struct mipi_dsi_device *dsi)
+ {

@@ -1,0 +1,78 @@
+From: TB520FU bring-up <noreply@localhost>
+Subject: [PATCH] PCI: qcom: keep TB520FU link OPP keys out of clock rates
+
+TB520FU reaches dev_pm_opp_set_opp() from qcom_pcie_probe(), and the
+implicit OPP clock callback reaches a shared floor RCG with no matching
+frequency. The resulting NULL freq_tbl pointer is dereferenced at
+__clk_rcg2_configure()+0x2c (ldrb w2, [x1, #8]).
+
+PCIe opp-hz entries encode link rate times lane count. On this board,
+use an explicit no-op clock callback while retaining bandwidth and
+required-OPP voting. Actual functional clocks remain managed by the PCIe
+and PHY resource paths. Restrict this policy to lenovo,tb520fu.
+
+Restore the missing shared-RCG frequency-lookup check so an unsupported
+rate returns -EINVAL and identifies the clock, rather than oopsing.
+
+diff --git a/drivers/clk/qcom/clk-rcg2.c b/drivers/clk/qcom/clk-rcg2.c
+--- a/drivers/clk/qcom/clk-rcg2.c
++++ b/drivers/clk/qcom/clk-rcg2.c
+@@ -1382,6 +1382,12 @@
+ 		f = qcom_find_freq(rcg->freq_tbl, rate);
+ 		break;
+ 	default:
++		return -EINVAL;
++	}
++
++	if (!f) {
++		pr_err_ratelimited("%s: unsupported shared RCG rate %lu\n",
++				   clk_hw_get_name(hw), rate);
+ 		return -EINVAL;
+ 	}
+ 
+diff --git a/drivers/pci/controller/dwc/pcie-qcom.c b/drivers/pci/controller/dwc/pcie-qcom.c
+--- a/drivers/pci/controller/dwc/pcie-qcom.c
++++ b/drivers/pci/controller/dwc/pcie-qcom.c
+@@ -2055,6 +2055,19 @@
+ 	return 0;
+ }
+ 
++/*
++ * PCIe opp-hz identifies link speed times lane count, not a functional clock
++ * rate. Keep OPP bandwidth and required-OPP votes, but let the PCIe resource
++ * and PHY code manage the actual clocks on TB520FU.
++ */
++static int qcom_pcie_link_opp_config_clks(struct device *dev,
++				       struct opp_table *opp_table,
++				       struct dev_pm_opp *opp, void *data,
++				       bool scaling_down)
++{
++	return 0;
++}
++
+ static int qcom_pcie_probe(struct platform_device *pdev)
+ {
+ 	struct qcom_pcie_perst *perst, *tmp_perst;
+@@ -2146,6 +2159,22 @@
+ 		pcie->mhi = devm_ioremap_resource(dev, res);
+ 		if (IS_ERR(pcie->mhi)) {
+ 			ret = PTR_ERR(pcie->mhi);
++			goto err_pm_runtime_put;
++		}
++	}
++
++	if (of_machine_is_compatible("lenovo,tb520fu") &&
++	    of_find_property(dev->of_node, "operating-points-v2", NULL)) {
++		/* Two NULLs select the default clock with one OPP rate key. */
++		const char * const clk_names[] = { NULL, NULL };
++		struct dev_pm_opp_config config = {
++			.clk_names = clk_names,
++			.config_clks = qcom_pcie_link_opp_config_clks,
++		};
++
++		ret = devm_pm_opp_set_config(dev, &config);
++		if (ret) {
++			dev_err_probe(dev, ret, "Failed to configure link OPPs\n");
+ 			goto err_pm_runtime_put;
+ 		}
+ 	}

@@ -111,3 +111,6 @@ v2_20260420_neil_armstrong_arm64_qcom_sm8650_misc_enhancements.patch
 0825-input-add-lenovo-yoga-serial-keyboard.patch
 0826-input-port-tb520fu-pmic-hv-haptics.patch
 0827-misc-add-tb520fu-goodix-power-irq-control.patch
+0828-clk-qcom-preserve-enabled-lucid-ole-pll.patch
+0829-PCI-qcom-tb520fu-link-opp-clock-policy.patch
+0832-drm-panel-nt36532-register-before-dsi-attach.patch

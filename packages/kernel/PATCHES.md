@@ -791,7 +791,7 @@ no equivalent submission was found, or a permanent URL to the upstream submissio
   source: armada
   upstream: local
 
-## TB520FU display/touch bring-up (uncompiled, hardware unverified)
+## TB520FU display/touch bring-up
 
 - `patches/0820-drm-panel-add-tb520fu-nt36532.patch`
   source: Lenovo TB520FU stock `decomp/dtcmp/running.dts`; Linux v7.2.6 DRM APIs
@@ -808,3 +808,26 @@ no equivalent submission was found, or a permanent URL to the upstream submissio
 - `dts/sm8650-lenovo-tb520fu{,-boe}.dts` and common `.dtsi`
   source: TB520FU stock running DT for display/touch wiring; inherited SM8650/PMIC/UFS mainline configuration for the shared platform
   notes: Distinct `lenovo,tb520fu` identity. No TB321FU audio, dual-USB, sensor or haptics nodes are enabled by inheritance. Touch axis rotation is a bring-up assumption requiring four-corner verification. See `tb520fu/source-manifest.json` for exact source hashes and `tb520fu/PORTING.md` for limitations.
+
+## TB520FU boot fixes
+
+- `patches/0828-clk-qcom-preserve-enabled-lucid-ole-pll.patch`
+  source: https://git.kernel.org/torvalds/c/2295d6a84179bfe853244c8ef26d6f54b29959cb
+  upstream: https://lore.kernel.org/all/20260713-sm8450-qol-dispcc-v3-3-56fd05822270@proton.me/
+  notes: Preserve enabled Lucid Ole PLLs during firmware framebuffer handoff.
+- `patches/0829-PCI-qcom-tb520fu-link-opp-clock-policy.patch`
+  source: local
+  upstream: local
+  notes: Restrict PCIe link OPP clock policy to `lenovo,tb520fu`; retain bandwidth and required-OPP votes. Reject unsupported shared RCG rates before dereferencing the frequency table.
+- `dts/0830-arm64-dts-qcom-tb520fu-allow-ldo12-rounded-voltage.patch`
+  source: TB520FU stock voltage request and Linux PMIC5 NLDO515 voltage table
+  notes: Keep the 1950000 uV minimum and allow rounding to 1952000 uV. Applied after copying the board DTS, rather than through the source patch series.
+- `dts/0831-arm64-dts-qcom-tb520fu-define-board-oscillators.patch`
+  source: TB520FU stock running device tree
+  notes: Set the shared Tianma/BOE XO and sleep clock rates to 76800000 and 32000 Hz. Applied after copying the board DTS.
+- `patches/0832-drm-panel-nt36532-register-before-dsi-attach.patch`
+  source: local; Linux 7.2.6 MSM component and managed DRM panel APIs
+  upstream: local
+  notes: Publish the panel before synchronous DSI component binding; initialize both links first and unwind attachments before managed panel removal.
+
+These fixes were compiled in the local Linux 7.2.6 integration build. A successful desktop boot and full hardware operation remain unverified.
