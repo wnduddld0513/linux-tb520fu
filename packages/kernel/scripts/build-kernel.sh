@@ -29,7 +29,8 @@ else
         echo "  sudo apt install gcc-aarch64-linux-gnu                            # Debian/Ubuntu" >&2
         exit 1
     fi
-    MAKE_ARGS+=(ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-)
+    export CROSS_COMPILE=aarch64-linux-gnu-
+    MAKE_ARGS+=(ARCH=arm64 CROSS_COMPILE="${CROSS_COMPILE}")
     echo "==> Cross-compiling from ${HOST_ARCH} to aarch64 (${JOBS} jobs)"
 fi
 
@@ -224,13 +225,82 @@ KVER=$(make "${MAKE_ARGS[@]}" -s kernelrelease)
 echo "==> Kernel version: ${KVER}"
 echo "==> Compiler: $(sed -n 's/^CONFIG_CC_VERSION_TEXT="\(.*\)"$/\1/p' .config)"
 
-# ---------- 5. Build ----------
+# ---------- 5. TB520FU BTF gate ----------
+# TB520FU runs scx (sched_ext) and other BPF programs whose kfunc prototypes
+# carry KF_IMPLICIT_ARGS. Those refuse to load when vmlinux has no .BTF, or
+# when its BTF was encoded by pahole < 1.26 ("func_proto incompatible with
+# vmlinux"), so a TB520FU build needs both and must fail before compiling
+# instead of shipping a kernel that cannot run scx. Identity comes from the
+# resolved .config - the fragment forces TB520FU's exclusive drivers =y - and
+# from the effective localversion, never from tree paths, so builds for other
+# devices are unaffected.
+PAHOLE_MIN_VERSION="1.26"
+PAHOLE_MIN_MAJOR="${PAHOLE_MIN_VERSION%%.*}"
+PAHOLE_MIN_MINOR="${PAHOLE_MIN_VERSION#*.}"
+PAHOLE_VERSION_TEXT=""
+BTF_DIGEST=""
+TB520FU_BUILD=0
+if grep -qx 'CONFIG_BACKLIGHT_TB520FU_KTZ8866=y' .config \
+    || grep -qi '^CONFIG_LOCALVERSION="[^"]*tb520fu' .config; then
+    TB520FU_BUILD=1
+fi
+
+if [ "${TB520FU_BUILD}" -eq 1 ]; then
+    if ! grep -qx 'CONFIG_DEBUG_INFO_BTF=y' .config; then
+        echo "ERROR: TB520FU needs CONFIG_DEBUG_INFO_BTF=y for scx and BTF-dependent BPF programs." >&2
+        echo "       actual: $(grep -E '^#? ?CONFIG_DEBUG_INFO_BTF' .config || echo 'not set')" >&2
+        echo "       fix: config/armada-kernel.config.overrides must keep CONFIG_DEBUG_INFO_BTF=y" >&2
+        exit 1
+    fi
+    if ! command -v pahole >/dev/null 2>&1; then
+        echo "ERROR: pahole (dwarves) is not installed, so CONFIG_DEBUG_INFO_BTF=y cannot be built." >&2
+        echo "       TB520FU needs pahole >= ${PAHOLE_MIN_VERSION} (kernel commit 9edd04c4189e raised the minimum)." >&2
+        echo "       sudo pacman -S pahole     # CachyOS/Arch" >&2
+        echo "       sudo apt install dwarves  # Debian/Ubuntu (24.04 ships 1.25, which is too old)" >&2
+        exit 1
+    fi
+    PAHOLE_VERSION_TEXT="$(pahole --version 2>/dev/null || true)"
+    PAHOLE_VERSION_NUM="$(printf '%s\n' "${PAHOLE_VERSION_TEXT}" | grep -oE '[0-9]+\.[0-9]+' | head -1 || true)"
+    if [ -z "${PAHOLE_VERSION_NUM}" ]; then
+        echo "ERROR: cannot read a version from 'pahole --version' (${PAHOLE_VERSION_TEXT:-no output});" >&2
+        echo "       TB520FU needs pahole >= ${PAHOLE_MIN_VERSION}; check which pahole is on PATH." >&2
+        exit 1
+    fi
+    pahole_major="${PAHOLE_VERSION_NUM%%.*}"
+    pahole_minor="${PAHOLE_VERSION_NUM#*.}"
+    if [ "${pahole_major}" -lt "${PAHOLE_MIN_MAJOR}" ] \
+        || { [ "${pahole_major}" -eq "${PAHOLE_MIN_MAJOR}" ] && [ "${pahole_minor}" -lt "${PAHOLE_MIN_MINOR}" ]; }; then
+        echo "ERROR: pahole ${PAHOLE_VERSION_TEXT} is older than ${PAHOLE_MIN_VERSION}: the BTF it encodes rejects" >&2
+        echo "       KF_IMPLICIT_ARGS kfuncs, so scx fails with 'func_proto incompatible with vmlinux'" >&2
+        echo "       (kernel commit 9edd04c4189e). Install pahole >= ${PAHOLE_MIN_VERSION} and rebuild." >&2
+        exit 1
+    fi
+    echo "==> TB520FU: CONFIG_DEBUG_INFO_BTF=y, pahole ${PAHOLE_VERSION_TEXT} (>= ${PAHOLE_MIN_VERSION})"
+fi
+
+# ---------- 6. Build ----------
 echo "==> Building Image + dtbs + modules"
 make "${MAKE_ARGS[@]}" Image dtbs modules
 command -v ccache >/dev/null 2>&1 && ccache -s || true
 size vmlinux 2>/dev/null || true
 
-# ---------- 6. Stage outputs ----------
+# vmlinux BTF is only guaranteed by actually inspecting the built vmlinux:
+# the same pahole version can still fail to encode it (or the step can be
+# skipped), and scx needs the section to load at all.
+if [ "${TB520FU_BUILD}" -eq 1 ]; then
+    echo "==> Verifying vmlinux .BTF"
+    btf_dump=$(mktemp)
+    if ! "${CROSS_COMPILE:-}objcopy" --dump-section .BTF="${btf_dump}" vmlinux /dev/null || [ ! -s "${btf_dump}" ]; then
+        rm -f "${btf_dump}"
+        echo "ERROR: vmlinux carries no .BTF section or extraction failed; cannot validate TB520FU BTF." >&2
+        exit 1
+    fi
+    BTF_DIGEST="sha256:$(sha256sum "${btf_dump}" | awk '{print $1}')"
+    rm -f "${btf_dump}"
+    echo "==> vmlinux .BTF digest: ${BTF_DIGEST}"
+fi
+
+# ---------- 7. Stage outputs ----------
 STAGE="${WORK_DIR}/staging-${KVER}"
 rm -rf "${STAGE}"
 mkdir -p "${STAGE}/lib/modules/${KVER}/dtb/qcom"
@@ -258,7 +328,15 @@ DTBs included: $(ls ${DTS_DIR}/*.dts | wc -l) TB520FU panel variants (SM8650)
 Repackaged for: armada
 EOF
 
-# ---------- 7. Package ----------
+# Only TB520FU builds are gated on BTF, so only they record what it produced.
+if [ "${TB520FU_BUILD}" -eq 1 ]; then
+    cat >> "${STAGE}/lib/modules/${KVER}/.armada-source" <<EOF
+BTF: vmlinux .BTF emitted with CONFIG_DEBUG_INFO_BTF=y, pahole ${PAHOLE_VERSION_TEXT}
+BTF digest: ${BTF_DIGEST}
+EOF
+fi
+
+# ---------- 8. Package ----------
 OUT_NAME="armada-kernel-${KVER}.tar.zst"
 OUT_PATH="${OUT_DIR}/${OUT_NAME}"
 echo "==> Compressing → ${OUT_PATH}"
