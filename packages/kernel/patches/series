@@ -108,6 +108,7 @@ v2_20260420_neil_armstrong_arm64_qcom_sm8650_misc_enhancements.patch
 0822-backlight-add-tb520fu-dual-ktz8866.patch
 0823-drm-msm-dsi-tb520fu-dsc-packet-and-scr.patch
 0824-tb520fu-use-stock-amp-and-wlan-firmware.patch
+0803-ASoC-aw882xx-defer-probe-until-reset-and-irq-GPIOs-resolve.patch
 0825-input-add-lenovo-yoga-serial-keyboard.patch
 0826-input-port-tb520fu-pmic-hv-haptics.patch
 0827-misc-add-tb520fu-goodix-power-irq-control.patch

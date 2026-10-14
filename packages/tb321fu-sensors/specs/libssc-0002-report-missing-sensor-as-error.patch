@@ -1,0 +1,24 @@
+From: wnduddld0513 <wnduddld0513@users.noreply.github.com>
+Subject: [PATCH] sensor: report a missing sensor as an initialization error
+
+When SUID discovery finds no sensor for the requested data type, the async
+initialization returned FALSE without a GError. GAsyncInitable callers then
+receive NULL with *error unset, and the TB520FU IMU bridge dereferenced the
+NULL error while the SSC was still registering sensors at boot (SIGSEGV).
+Return SSC_SENSOR_ERROR_UNAVAILABLE instead.
+
+---
+diff --git a/src/libssc-sensor.c b/src/libssc-sensor.c
+--- a/src/libssc-sensor.c
++++ b/src/libssc-sensor.c
+@@ -522,7 +522,9 @@
+ 			g_signal_handler_disconnect (self, priv->report_id);
+ 			priv->report_id = 0;
+ 
+-			g_task_return_boolean (ctx->task, FALSE);
++			/* Initialization failed: callers read the error message */
++			g_task_return_new_error (ctx->task, ssc_sensor_error_quark (), SSC_SENSOR_ERROR_UNAVAILABLE,
++						 "No '%s' sensor available", priv->data_type);
+ 			g_clear_object (&ctx->task);
+ 			g_slice_free (ReportReceivedContext, ctx);
+ 

@@ -1,0 +1,47 @@
+From: wnduddld0513 <wnduddld0513@users.noreply.github.com>
+Subject: [PATCH] ASoC: aw882xx: defer probe until the reset and irq GPIOs resolve
+
+The second TB520FU amplifier bank shares one reset line through a gpiolib
+shared proxy. When the amplifiers probe before that proxy binds,
+devm_gpiod_get_optional() returns -EPROBE_DEFER. The driver treated the
+error pointer as a provided GPIO, so the reset was never released, every
+chip ID read failed with -ENXIO and the whole sound card stayed
+unregistered. Propagate GPIO lookup errors so the driver core retries the
+probe once the proxy is available.
+
+---
+diff --git a/sound/soc/codecs/aw882xx/aw882xx.c b/sound/soc/codecs/aw882xx/aw882xx.c
+--- a/sound/soc/codecs/aw882xx/aw882xx.c
++++ b/sound/soc/codecs/aw882xx/aw882xx.c
+@@ -2002,7 +2002,16 @@
+ 	//one_rst
+ 	if (one_rst_dts[aw882xx->rst_flag] == 0) {
+ 		aw882xx->reset_gpio = aw882xx_get_legacy_gpio(aw882xx->dev, "reset", GPIOD_OUT_LOW);
+-		if (IS_ERR_OR_NULL(aw882xx->reset_gpio))
++		/*
++		 * A reset line shared by several amplifiers is provided through a
++		 * gpiolib shared proxy that can bind after this device. Defer
++		 * instead of keeping the error pointer, which leaves the amplifier
++		 * in reset and fails the chip ID read.
++		 */
++		if (IS_ERR(aw882xx->reset_gpio))
++			return dev_err_probe(aw882xx->dev, PTR_ERR(aw882xx->reset_gpio),
++					     "failed to get reset gpio\n");
++		if (!aw882xx->reset_gpio)
+ 			aw_dev_info(aw882xx->dev, "no reset gpio provided, will not HW reset device");
+ 		else
+ 			aw_dev_info(aw882xx->dev, "reset gpio provided ok");
+@@ -2010,7 +2019,10 @@
+ 			one_rst_dts[aw882xx->rst_flag] = 1;
+ 	}
+ 	aw882xx->irq_gpio = aw882xx_get_legacy_gpio(aw882xx->dev, "irq", GPIOD_IN);
+-	if (IS_ERR_OR_NULL(aw882xx->irq_gpio))
++	if (IS_ERR(aw882xx->irq_gpio))
++		return dev_err_probe(aw882xx->dev, PTR_ERR(aw882xx->irq_gpio),
++				     "failed to get irq gpio\n");
++	if (!aw882xx->irq_gpio)
+ 		aw_dev_info(aw882xx->dev, "no irq gpio provided.");
+ 	else
+ 		aw_dev_info(aw882xx->dev, "irq gpio provided ok.");
+-- 
+2.43.0

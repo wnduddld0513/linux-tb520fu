@@ -192,7 +192,8 @@ CONFIG_SND_SEQUENCER=m
 CONFIG_PROC_CHILDREN=y
 CONFIG_UCLAMP_TASK=y                         # armada-powerd sets cpu.uclamp.min per game
 CONFIG_UCLAMP_TASK_GROUP=y
-CONFIG_SCHED_CLASS_EXT=y                     # sched_ext; needed by scx_lavd
+# sched_ext stays off: starting scx_lavd hangs the TB520FU before the first frame.
+# CONFIG_SCHED_CLASS_EXT is not set
 CONFIG_BPF=y
 CONFIG_BPF_JIT=y
 CONFIG_BPF_JIT_ALWAYS_ON=y
