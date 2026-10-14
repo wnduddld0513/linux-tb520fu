@@ -1,0 +1,56 @@
+From: TB520FU port maintainers
+Subject: [PATCH] clk: qcom: dispcc-sm8550: enable parents for SM8650 byte/pixel RCGs
+
+The SM8650 byte/pixel source RCGs (byte0/1, pclk0/1) list DSI PHY PLL
+outputs as parents but only set CLK_SET_RATE_PARENT. The MDP source in
+the same file sets CLK_SET_RATE_PARENT | CLK_OPS_PARENT_ENABLE, and the
+upstream sm8250 pixel-clock fix adds the same flag to prevent RCG stalls.
+
+On TB520FU the UEFI framebuffer is still scanning at MSM bind (simpledrm
+on card0, msm on card1, DSI-1 disabled). The first MSM atomic commit
+reparents the byte/pixel RCGs to the just-enabled DSI PHY PLLs and then
+touches DSI/DPU registers. Without CLK_OPS_PARENT_ENABLE the CCF does not
+ensure the PLL is running during the RCG update; the update stalls and the
+next MMIO on the hung clock stalls the AXI bus (all CPUs freeze, no oops).
+
+Set CLK_OPS_PARENT_ENABLE on the four SM8650 byte/pixel source RCGs so the
+parent PLL is enabled across the update, matching the MDP RCG.
+
+--- a/drivers/clk/qcom/dispcc-sm8550.c
++++ b/drivers/clk/qcom/dispcc-sm8550.c
+@@ -311,7 +311,7 @@ static struct clk_rcg2 disp_cc_mdss_byte0_clk_src = {
+ 		.name = "disp_cc_mdss_byte0_clk_src",
+ 		.parent_data = disp_cc_parent_data_2,
+ 		.num_parents = ARRAY_SIZE(disp_cc_parent_data_2),
+-		.flags = CLK_SET_RATE_PARENT,
++		.flags = CLK_SET_RATE_PARENT | CLK_OPS_PARENT_ENABLE,
+ 		.ops = &clk_byte2_ops,
+ 	},
+ };
+@@ -326,7 +326,7 @@ static struct clk_rcg2 disp_cc_mdss_byte1_clk_src = {
+ 		.name = "disp_cc_mdss_byte1_clk_src",
+ 		.parent_data = disp_cc_parent_data_2,
+ 		.num_parents = ARRAY_SIZE(disp_cc_parent_data_2),
+-		.flags = CLK_SET_RATE_PARENT,
++		.flags = CLK_SET_RATE_PARENT | CLK_OPS_PARENT_ENABLE,
+ 		.ops = &clk_byte2_ops,
+ 	},
+ };
+@@ -639,7 +639,7 @@ static struct clk_rcg2 disp_cc_mdss_pclk0_clk_src = {
+ 		.name = "disp_cc_mdss_pclk0_clk_src",
+ 		.parent_data = disp_cc_parent_data_2,
+ 		.num_parents = ARRAY_SIZE(disp_cc_parent_data_2),
+-		.flags = CLK_SET_RATE_PARENT,
++		.flags = CLK_SET_RATE_PARENT | CLK_OPS_PARENT_ENABLE,
+ 		.ops = &clk_pixel_ops,
+ 	},
+ };
+@@ -654,7 +654,7 @@ static struct clk_rcg2 disp_cc_mdss_pclk1_clk_src = {
+ 		.name = "disp_cc_mdss_pclk1_clk_src",
+ 		.parent_data = disp_cc_parent_data_2,
+ 		.num_parents = ARRAY_SIZE(disp_cc_parent_data_2),
+-		.flags = CLK_SET_RATE_PARENT,
++		.flags = CLK_SET_RATE_PARENT | CLK_OPS_PARENT_ENABLE,
+ 		.ops = &clk_pixel_ops,
+ 	},
+ };

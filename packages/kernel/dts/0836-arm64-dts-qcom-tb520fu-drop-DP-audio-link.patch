@@ -1,0 +1,35 @@
+From: TB520FU port maintainers
+Subject: [PATCH] arm64: dts: qcom: tb520fu: drop DisplayPort audio link from sound card
+
+The internal-display boot DTB disables the DisplayPort controller
+(/soc@0/display-subsystem@ae00000/displayport-controller@af54000) so the
+MSM component master can bind without an unavailable DP bridge. The
+sound card still lists a "DisplayPort Playback" DAI link referencing
+&mdss_dp0, which can never resolve on that DTB. qcom_snd_parse_of()
+fails with "DisplayPort Playback: codec dai not found" and the card
+stays in /sys/kernel/debug/devices_deferred forever, even after WCD,
+SoundWire and AW882xx links are bound.
+
+Follow the SC8280XP Lenovo ThinkPad X13s precedent, which deletes
+#sound-dai-cells from the unused eDP controller and omits any DP link
+from its sound card. Drop the dp-playback-dai-link from the TB520FU
+sound node; internal speakers (WCD + AW882xx via TDM), headset and
+capture remain. USB-C DP audio can be re-added once the DP bridge is
+enabled in a display configuration that actually provides it.
+
+--- a/arch/arm64/boot/dts/qcom/sm8650-lenovo-tb520fu-peripherals.dtsi
++++ b/arch/arm64/boot/dts/qcom/sm8650-lenovo-tb520fu-peripherals.dtsi
+@@ -120,13 +120,6 @@
+ 			};
+ 		};
+ 
+-		dp-playback-dai-link {
+-			link-name = "DisplayPort Playback";
+-			cpu { sound-dai = <&q6apmbedai DISPLAY_PORT_RX_0>; };
+-			codec { sound-dai = <&mdss_dp0>; };
+-			platform { sound-dai = <&q6apm>; };
+-		};
+-
+ 		aw-spk-dai-link {
+ 			link-name = "AW882xx Playback";
+ 

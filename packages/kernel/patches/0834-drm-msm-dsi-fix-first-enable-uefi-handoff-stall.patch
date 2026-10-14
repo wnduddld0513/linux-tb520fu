@@ -1,0 +1,65 @@
+From: TB520FU port maintainers
+Subject: [PATCH] drm/msm/dsi: fix first-enable UEFI handoff stall on bonded DSI
+
+Two defects in the first-enable path can stall the bus when the UEFI
+framebuffer is still scanning (TB520FU shows the firmware image until
+Gamescope first atomic commit on DSI-1, with DSI-1 enabled=disabled):
+
+1. dsi_link_clk_set_rate_6g_v2_9() logs clk_set_parent failures and then
+overwrites ret and proceeds to set rates on the wrong parent. If the
+RCG reparent stalls (RCG busy from firmware scanout, parent PLL not yet
+locked), the driver programs byte/pixel rates on the stale parent and
+the next dsi_write in dsi_timing_setup/dsi_sw_reset stalls the AXI bus
+(all CPUs freeze, no oops). Return the error so power_on aborts before
+touching the hung clock.
+
+2. msm_dsi_host_power_on() switches the byte/pixel RCGs before quiescing a
+firmware-enabled controller. The MDSS reset at probe does not stop the
+display when the Lucid Ole PLLs are preserved (0828), so CTRL is still
+ENABLED on the first power_on (power_on==false but hardware on).
+Switching RCG parents/rates underneath a streaming controller wedges the
+RCG/PLL. Quiesce a firmware-enabled controller while still on the old
+clocks before reparenting, mirroring the disable in dsi_sw_reset but
+before the clock switch.
+
+--- a/drivers/gpu/drm/msm/dsi/dsi_host.c	2026-10-14 12:52:53.827978514 +0900
++++ b/drivers/gpu/drm/msm/dsi/dsi_host.c	2026-10-14 18:33:33.105124616 +0900
+@@ -446,12 +446,16 @@
+ 	 * cannot use assigned-clock-parents.
+ 	 */
+ 	ret = clk_set_parent(msm_host->byte_src_clk, msm_host->dsi_pll_byte_clk);
+-	if (ret)
++	if (ret) {
+ 		dev_err(dev, "Failed to parent byte_src -> dsi_pll_byte: %d\n", ret);
++		return ret;
++	}
+ 
+ 	ret = clk_set_parent(msm_host->pixel_src_clk, msm_host->dsi_pll_pixel_clk);
+-	if (ret)
++	if (ret) {
+ 		dev_err(dev, "Failed to parent pixel_src -> dsi_pll_pixel: %d\n", ret);
++		return ret;
++	}
+ 
+ 	return dsi_link_clk_set_rate_6g(msm_host);
+ }
+@@ -2549,6 +2553,18 @@
+ 	}
+ 
+ 	pm_runtime_get_sync(&msm_host->pdev->dev);
++
++	/*
++	 * UEFI may leave the controller streaming (firmware framebuffer still
++	 * visible, MDSS reset preserved by 0828). Switching RCGs underneath a
++	 * running controller wedges the clock and stalls the bus on the next
++	 * register access. Quiesce it on the old clocks before reparenting.
++	 */
++	if (dsi_read(msm_host, REG_DSI_CTRL) & DSI_CTRL_ENABLE) {
++		dsi_write(msm_host, REG_DSI_CTRL, 0);
++		wmb();
++	}
++
+ 	ret = cfg_hnd->ops->link_clk_set_rate(msm_host);
+ 	if (!ret)
+ 		ret = cfg_hnd->ops->link_clk_enable(msm_host);
+

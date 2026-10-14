@@ -115,3 +115,6 @@ v2_20260420_neil_armstrong_arm64_qcom_sm8650_misc_enhancements.patch
 0828-clk-qcom-preserve-enabled-lucid-ole-pll.patch
 0829-PCI-qcom-tb520fu-link-opp-clock-policy.patch
 0832-drm-panel-nt36532-register-before-dsi-attach.patch
+0833-clk-qcom-dispcc-sm8550-enable-byte-pixel-parents.patch
+0834-drm-msm-dsi-fix-first-enable-uefi-handoff-stall.patch
+0835-ASoC-qcom-q6apm-handle-SPF-state-timeout.patch

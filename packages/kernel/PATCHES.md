@@ -830,4 +830,23 @@ no equivalent submission was found, or a permanent URL to the upstream submissio
   upstream: local
   notes: Publish the panel before synchronous DSI component binding; initialize both links first and unwind attachments before managed panel removal.
 
+- `patches/0833-clk-qcom-dispcc-sm8550-enable-byte-pixel-parents.patch`
+  source: local; Linux 7.2.6 `drivers/clk/qcom/dispcc-sm8550.c`
+  upstream: local
+  notes: Set CLK_OPS_PARENT_ENABLE on SM8650 byte0/1 and pclk0/1 source RCGs so the DSI PHY PLL parent is enabled across the first-enable reparent from the UEFI framebuffer handoff, matching the MDP RCG and the upstream sm8250 pixel-clock fix. Without it the RCG update stalls and the next MMIO stalls the AXI bus.
+- `patches/0834-drm-msm-dsi-fix-first-enable-uefi-handoff-stall.patch`
+  source: local; Linux 7.2.6 `drivers/gpu/drm/msm/dsi/dsi_host.c`
+  upstream: local
+  notes: Return clk_set_parent errors in dsi_link_clk_set_rate_6g_v2_9 instead of programming rates on the wrong parent, and quiesce a firmware-enabled DSI controller in msm_dsi_host_power_on before switching byte/pixel RCGs. Prevents switching clocks underneath the still-scanning UEFI display, which wedges the RCG/PLL and stalls the bus on the first atomic commit.
+
+## TB520FU audio (ADSP/AudioReach) bring-up
+
+- `patches/0835-ASoC-qcom-q6apm-handle-SPF-state-timeout.patch`
+  source: local; Linux 7.2.6 `sound/soc/qcom/qdsp6/q6apm.c`
+  upstream: local
+  notes: Propagate APM_CMD_GET_SPF_STATE timeouts, return false from q6apm_is_adsp_ready() on error, and defer apm_probe() with -EPROBE_DEFER so the core retries after SPF is up instead of registering with stale state.
+- `dts/0836-arm64-dts-qcom-tb520fu-drop-DP-audio-link.patch`
+  source: TB520FU internal-display DTB (DP controller disabled) and SC8280XP Lenovo ThinkPad X13s precedent
+  notes: Drop the DisplayPort Playback DAI link referencing the disabled &mdss_dp0 so qcom_snd_parse_of() no longer defers the sound card forever; WCD, SoundWire and AW882xx links remain. Applied after copying the board DTS, rather than through the source patch series.
+
 These fixes were compiled in the local Linux 7.2.6 integration build. A successful desktop boot and full hardware operation remain unverified.
